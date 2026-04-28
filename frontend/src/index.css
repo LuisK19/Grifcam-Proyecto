@@ -1,0 +1,94 @@
+:root {
+  /* Naranjas de marca */
+  --color-pumpkin-spice:  #EA7D38;   /* naranja fuerte*/
+  --color-sandy-storm: #f49246;   /* naranja medio*/
+
+  /* Pasteles cálidos */
+  --color-peach-glow:     #F3C79F;   
+  --color-soft-apricot:   #F4D8B9;   
+  --color-eggshell:       #F3F0DF;   
+  --color-bwhite:          #fefefe;  
+
+  /* Acciones y marca */
+  --color-primary:        var(--color-sandy-storm);   /* botón principal, links activos  */
+  --color-primary-hover:  var(--color-pumpkin-spice);  /* estado hover del primario       */
+  --color-primary-light:  var(--color-peach-glow);      /* fondo suave en inputs, chips    */
+
+  /* Fondos */
+  --color-bg:             var(--color-eggshell);        /* fondo de toda la app            */
+  --color-surface:        var(--color-bwhite);                      /* tarjetas, modales, formularios  */
+  --color-surface-warm:   var(--color-soft-apricot);    /* tarjetas con tono cálido        */
+
+  /* Bordes */
+  --color-border:         var(--color-soft-apricot);    /* bordes generales                */
+  --color-border-strong:  var(--color-peach-glow);      /* bordes con más contraste        */
+
+  /* Textos */
+  --color-text:           #2c1a0e;   /* texto principal — marrón muy oscuro                */
+  --color-text-muted:     #7a4f2e;   /* texto secundario — marrón medio                    */
+  --color-text-on-primary: #ffffff;  /* texto sobre fondo naranja (botones)                */
+
+  /* Estados */
+  --color-success:        #4caf7d;
+  --color-error:          #d94f4f;
+  --color-warning:        var(--color-sandy-storm);
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA
+     ---------------------------------------------------------- */
+  --font-body:    sans-serif;   /* Nota: actualizar la fuente a la de las publicaciones */
+  --font-display: sans-serif;   /* Nota: actualizar la fuente a la de las publicaciones */
+
+  /* ----------------------------------------------------------
+     ESPACIADO Y FORMA
+     ---------------------------------------------------------- */
+  --radius-sm:    6px;
+  --radius:       10px;
+  --radius-lg:    16px;
+  --radius-full:  9999px;   /* para chips y badges redondeados */
+
+  --shadow-sm:    0 1px 4px  rgba(44, 26, 14, 0.06);
+  --shadow:       0 2px 12px rgba(44, 26, 14, 0.10);
+  --shadow-lg:    0 6px 24px rgba(44, 26, 14, 0.14);
+}
+
+/* ------------------------------------------------------------
+   RESET BASE
+   ------------------------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);   /* Nota: actualizar la fuente a la de las publicaciones */
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
