@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 //import Login from './pages/Login/Login'
 
-// Descomentar conforme se vayan completando:
 import Home from './pages/Home/Home'
+import Navbar from './components/Navbar/Navbar'
 // import Catalogo from './pages/Catalogo/Catalogo'
 // import ProductDetail from './pages/ProductDetail/ProductDetail'
 // import Info from './pages/Info/Info'
@@ -11,6 +11,7 @@ import Home from './pages/Home/Home'
 function App() {
   return (
     <BrowserRouter>
+    <Navbar />
       <Routes>
         {/*<Route path="/admin/login" element={<Login />} />*/}
         <Route path="/" element={<Home />} />
