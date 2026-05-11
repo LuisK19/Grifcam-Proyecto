@@ -9,6 +9,8 @@ import Info from './pages/Info/Info'
 import AdminDashboard from './pages/Admin/Dashboard/AdminDashboard'
 import AdminProductos from './pages/Admin/Productos/AdminProductos'
 import AdminProductoForm from './pages/Admin/ProductosForm/AdminProductoForm'
+import AdminCategorias from './pages/Admin/Categorias/AdminCategorias'
+import AdminInfo from './pages/Admin/Info/AdminInfo'
 
 
 function AppContent() {
@@ -29,6 +31,8 @@ function AppContent() {
         <Route path="/admin/productos" element={<AdminProductos />} />
         <Route path="/admin/productos/nuevo"          element={<AdminProductoForm />} />
         <Route path="/admin/productos/:id/editar"     element={<AdminProductoForm />} />
+        <Route path="/admin/categorias" element={<AdminCategorias />} />
+        <Route path="/admin/info" element={<AdminInfo />} />
 
       </Routes>
     </>
