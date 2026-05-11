@@ -6,7 +6,10 @@ import Catalogo from './pages/Catalogo/Catalogo'
 import Login from './pages/Login/Login'
 import ProductDetail from './pages/ProductDetail/ProductDetail'
 import Info from './pages/Info/Info'
-// import Admin from './pages/Admin/Admin'
+import AdminDashboard from './pages/Admin/Dashboard/AdminDashboard'
+import AdminProductos from './pages/Admin/Productos/AdminProductos'
+import AdminProductoForm from './pages/Admin/ProductosForm/AdminProductoForm'
+
 
 function AppContent() {
   const location = useLocation()
@@ -18,10 +21,15 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/catalogo" element={<Catalogo />} />
-        <Route path="/admin/login" element={<Login />} />
         <Route path="/producto/:id" element={<ProductDetail />} />
         <Route path="/info" element={<Info />} />
-        {/* <Route path="/admin" element={<Admin />} /> */}
+        
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/productos" element={<AdminProductos />} />
+        <Route path="/admin/productos/nuevo"          element={<AdminProductoForm />} />
+        <Route path="/admin/productos/:id/editar"     element={<AdminProductoForm />} />
+
       </Routes>
     </>
   )
