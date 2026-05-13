@@ -1,0 +1,182 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── ENCABEZADO ── */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.titulo {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.subtitulo {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ── CONTADORES CLICKEABLES ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 40rem) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 64rem) {
+  .statsGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.statCard {
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+
+.statCard:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-0.1rem);
+  box-shadow: var(--shadow-sm);
+}
+
+.statIcono {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.statNumero {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statFlecha {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.statCard:hover .statFlecha {
+  opacity: 1;
+}
+
+/* ── ACCESOS RÁPIDOS ── */
+.seccionTitulo {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.accesoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.625rem;
+}
+
+@media (min-width: 40rem) {
+  .accesoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.accesoCard {
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.accesoCard:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-0.1rem);
+  box-shadow: var(--shadow-sm);
+}
+
+.accesoCardPrimary {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.accesoIcono {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.accesoIconoPrimary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.accesoTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.accesoTitulo {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 0.2rem;
+}
+
+.accesoDesc {
+  font-size: 0.775rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}

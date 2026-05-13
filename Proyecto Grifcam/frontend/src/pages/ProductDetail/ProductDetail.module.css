@@ -1,0 +1,587 @@
+/* src/pages/ProductDetail/ProductDetail.module.css */
+
+/* ============================================================
+   PÁGINA
+   ============================================================ */
+
+.page {
+  background-color: var(--color-bg);
+  padding-top: 3rem;       /* topbar mobile */
+  padding-bottom: 5.5rem;  /* bottom nav mobile */
+  min-height: 100vh;
+}
+
+/* ============================================================
+   BOTÓN VOLVER
+   ============================================================ */
+
+.btnVolver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0.75rem 1.25rem;
+  transition: opacity 0.15s ease;
+}
+
+.btnVolver:hover {
+  opacity: 0.75;
+}
+
+/* ============================================================
+   CONTENIDO PRINCIPAL
+   — Mobile: columna (galería arriba, info abajo)
+   — Desktop: fila (galería izquierda, info derecha)
+   ============================================================ */
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0 1.25rem;
+}
+
+/* ============================================================
+   GALERÍA
+   ============================================================ */
+
+.galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* Imagen principal */
+.imgPrincipalWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-warm);
+  cursor: zoom-in;
+}
+
+.imgPrincipal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.imgPrincipal:hover {
+  transform: scale(1.02);
+}
+
+/* Flechas sobre la imagen */
+.flechaImg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.88);
+  border: none;
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease;
+  z-index: 2;
+}
+
+.flechaImg:hover {
+  background: #fff;
+}
+
+.flechaIzq { left: 0.5rem; }
+.flechaDer { right: 0.5rem; }
+
+/* Badges sobre imagen */
+.imgBadges {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 2;
+}
+
+.badgeOferta {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  display: inline-block;
+}
+
+.badgeNuevo {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #0F6E56;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  display: inline-block;
+}
+
+/* Hint ampliar */
+.ampliarHint {
+  position: absolute;
+  bottom: 0.625rem;
+  right: 0.625rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  pointer-events: none;
+}
+
+/* Miniaturas */
+.miniaturas {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.miniatura {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 0.125rem solid transparent;
+  padding: 0;
+  cursor: pointer;
+  background: var(--color-surface-warm);
+  transition: border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.miniaturaActiva {
+  border-color: var(--color-primary);
+}
+
+.miniaturaImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================================
+   PANEL DE INFORMACIÓN
+   ============================================================ */
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.categoria {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.75rem;
+}
+
+.sku {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.nombre {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+/* Precios */
+.precioWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.precioAnterior {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.precio {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.descuentoBadge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.5rem;
+}
+
+/* Descripción */
+.descripcion {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}
+
+.separador {
+  height: 0.0625rem;
+  background: var(--color-border);
+}
+
+/* Cantidad */
+.cantidadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cantidadLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.cantidadCtrl {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.cantidadBtn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 0.0625rem solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.cantidadBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.cantidadNum {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* Botones de acción */
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.btnCarrito {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.btnCarrito:hover {
+  opacity: 0.9;
+}
+
+.btnWhatsApp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.btnWhatsApp:hover {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   PRODUCTOS RELACIONADOS
+   ============================================================ */
+
+.relacionados {
+  padding: 1.5rem 1.25rem 0;
+}
+
+.relacionadosTitulo {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 0.875rem;
+}
+
+.relacionadosGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+
+.relCard {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  border: 0.0625rem solid var(--color-border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.relCard:hover {
+  transform: translateY(-0.125rem);
+}
+
+.relImgWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--color-surface-warm);
+}
+
+.relImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.relImgPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-warm);
+}
+
+.relBadge {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.375rem;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.2rem;
+  padding: 0.125rem 0.35rem;
+}
+
+.relBadgeNuevo {
+  color: #0F6E56;
+}
+
+.relInfo {
+  padding: 0.5rem 0.625rem 0.625rem;
+}
+
+.relNombre {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.relPrecio {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.lightboxCerrar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.lightboxCerrar:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightboxImg {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.lightboxFlecha {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.lightboxFlecha:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightboxFlechaIzq { left: 1rem; }
+.lightboxFlechaDer { right: 1rem; }
+
+.lightboxContador {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================================
+   DESKTOP
+   ============================================================ */
+
+@media (min-width: 64rem) {
+  .page {
+    padding-top: 0;
+    padding-bottom: 2.5rem;
+    max-width: 75rem;
+    margin: 0 auto;
+  }
+
+  /* Horizontal: galería izquierda, info derecha */
+  .contenido {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+    padding: 0;
+  }
+
+  .galeria {
+    width: 50%;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem;
+  }
+
+  .info {
+    flex: 1;
+    padding-top: 0.5rem;
+  }
+
+  .acciones {
+    flex-direction: row;
+  }
+
+  .btnCarrito,
+  .btnWhatsApp {
+    flex: 1;
+  }
+
+  .relacionadosGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .relacionados {
+    padding: 2rem 0 0;
+  }
+
+  .btnVolver {
+    padding: 1rem 0;
+  }
+}
+
+/* Tablet */
+@media (min-width: 40rem) and (max-width: 63.9rem) {
+  .relacionadosGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .miniatura {
+    width: 4rem;
+    height: 4rem;
+  }
+}
