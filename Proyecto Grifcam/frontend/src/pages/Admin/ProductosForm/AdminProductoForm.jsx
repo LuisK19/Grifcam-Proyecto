@@ -66,9 +66,11 @@ export default function AdminProductoForm() {
           is_featured:    producto.is_featured ?? false,
           featured_badge: producto.featured_badge ?? '',
         })
-        const imgs = (producto.images ?? []).map(url => ({
+        const imgs = (producto.product_images ?? [])
+        .sort((a, b) => a.image_order - b.image_order)
+        .map(img => ({
           id: nextImgId++,
-          src: url,
+          src: img.image_url,   // la URL está en image_url, no directamente
           file: null,
           esExistente: true,
         }))

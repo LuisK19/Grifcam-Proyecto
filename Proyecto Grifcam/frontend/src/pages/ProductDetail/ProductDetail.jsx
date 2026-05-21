@@ -4,7 +4,6 @@ import { ArrowLeft, ChevronLeft, ChevronRight, X, ShoppingCart, MessageCircle } 
 import styles from './ProductDetail.module.css'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
-const BASE_URL      = 'http://localhost:5000'
 const WHATSAPP_NUMBER = '50600000000'
 
 // Devuelve array de URLs completas ordenadas por image_order
@@ -12,7 +11,7 @@ function getImagenes(product) {
   if (!product?.product_images || product.product_images.length === 0) return []
   return [...product.product_images]
     .sort((a, b) => a.image_order - b.image_order)
-    .map(img => BASE_URL + img.image_url)
+    .map(img => img.image_url)
 }
 
 export default function ProductDetail() {
@@ -237,7 +236,7 @@ export default function ProductDetail() {
           <div className={styles.relacionadosGrid}>
             {relacionados.map(p => {
               const relImg = p.product_images?.length > 0
-                ? BASE_URL + [...p.product_images].sort((a, b) => a.image_order - b.image_order)[0].image_url
+                ? [...p.product_images].sort((a, b) => a.image_order - b.image_order)[0].image_url
                 : null
               return (
                 <div

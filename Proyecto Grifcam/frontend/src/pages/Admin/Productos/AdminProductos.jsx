@@ -8,13 +8,11 @@ import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminProductos.module.css'
 import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
-const BASE_URL = 'http://localhost:5000'
-
 function getPrimeraImagen(product) {
   const imgs = product.product_images
   if (!imgs || imgs.length === 0) return null
   const sorted = [...imgs].sort((a, b) => a.image_order - b.image_order)
-  return BASE_URL + sorted[0].image_url
+  return sorted[0].image_url  // ← directo, sin BASE_URL
 }
 
 function ModalConfirmar({ producto, onConfirmar, onCancelar }) {

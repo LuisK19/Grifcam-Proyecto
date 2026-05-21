@@ -4,8 +4,6 @@ import { Search, X } from 'lucide-react'
 import styles from './Catalogo.module.css'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
-const BASE_URL = 'http://localhost:5000'
-
 const FILTROS_ESPECIALES = [
   { key: 'todos',    label: 'Todos'   },
   { key: 'is_offer', label: 'Ofertas' },
@@ -17,7 +15,7 @@ function getPrimeraImagen(product) {
   const imgs = product.product_images
   if (!imgs || imgs.length === 0) return null
   const sorted = [...imgs].sort((a, b) => a.image_order - b.image_order)
-  return BASE_URL + sorted[0].image_url
+  return sorted[0].image_url  // ← directo, sin BASE_URL
 }
 
 export default function Catalogo() {
