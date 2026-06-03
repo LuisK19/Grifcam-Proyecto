@@ -1,74 +1,88 @@
-import { useState, useEffect } from 'react'
+// src/pages/Home/Home.jsx
+// Landing page con skeleton loading para las secciones que dependen de la API
+
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './Home.module.css'
 import heroBg from '../../assets/bg.png'
+import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
-// DATOS MOCK 
-const MOCK_PRODUCTOS = [
-  { id: 1, nombre: 'Producto A', precio: 2500, precioAnterior: 3200, badge: 'Oferta' },
-  { id: 2, nombre: 'Producto B', precio: 3800, precioAnterior: null,  badge: 'Nuevo'  },
-  { id: 3, nombre: 'Producto C', precio: 1200, precioAnterior: 1800, badge: 'Oferta' },
-  { id: 4, nombre: 'Producto D', precio: 4500, precioAnterior: null,  badge: 'Nuevo'  },
-  { id: 5, nombre: 'Producto E', precio: 2900, precioAnterior: null,  badge: 'Popular'},
-  { id: 6, nombre: 'Producto F', precio: 3600, precioAnterior: null,  badge: 'Nuevo'  },
-]
+// TODO: reemplazar con fetch a GET /api/business-info cuando esté disponible
+const DESCRIPCION_CORTA = 'Somos una distribuidora comprometida con la calidad y el servicio al cliente. Llevamos productos seleccionados directamente a tu negocio con los mejores precios del mercado.'
 
-const MOCK_CATEGORIAS = [
-  { id: 1, nombre: 'Categoría 1', cantidad: 12 },
-  { id: 2, nombre: 'Categoría 2', cantidad: 8  },
-  { id: 3, nombre: 'Categoría 3', cantidad: 15 },
-  { id: 4, nombre: 'Categoría 4', cantidad: 6  },
-]
+function getPrimeraImagen(product) {
+  const imgs = product.product_images
+  if (!imgs || imgs.length === 0) return null
+  const sorted = [...imgs].sort((a, b) => a.image_order - b.image_order)
+  return sorted[0].image_url
+}
 
+// === Skeleton de tarjeta de producto ===
+function SkeletonProductoCard() {
+  return (
+    <div className={styles.skeletonCard}>
+      <div className={`${styles.skeleton} ${styles.skeletonImg}`} />
+      <div className={styles.skeletonInfo}>
+        <div className={`${styles.skeleton} ${styles.skeletonBadge}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonNombre}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonPrecio}`} />
+      </div>
+    </div>
+  )
+}
+
+// === Skeleton de tarjeta de categoría ===
+function SkeletonCategoriaCard() {
+  return (
+    <div className={styles.skeletonCatCard}>
+      <div className={`${styles.skeleton} ${styles.skeletonCatIcono}`} />
+      <div className={`${styles.skeleton} ${styles.skeletonCatNombre}`} />
+    </div>
+  )
+}
+
+// === Skeleton del carrusel completo ===
+function SkeletonCarrusel({ tipo = 'producto', cantidad = 2 }) {
+  return (
+    <div className={styles.carruselWrapper}>
+      <div className={styles.skeletonCarruselBtn} />
+      <div className={styles.carruselVentana}>
+        {Array.from({ length: cantidad }).map((_, i) =>
+          tipo === 'producto'
+            ? <SkeletonProductoCard key={i} />
+            : <SkeletonCategoriaCard key={i} />
+        )}
+      </div>
+      <div className={styles.skeletonCarruselBtn} />
+    </div>
+  )
+}
+
+// === Carrusel genérico ===
 function Carrusel({ items, renderCard, visibleCount = 1 }) {
   const [pagina, setPagina] = useState(0)
   const totalPaginas = Math.max(1, Math.ceil(items.length / visibleCount))
-  const inicio = pagina * visibleCount
+  const paginaSegura = useMemo(() => Math.min(pagina, totalPaginas - 1), [pagina, totalPaginas])
+  const inicio   = paginaSegura * visibleCount
   const visibles = items.slice(inicio, inicio + visibleCount)
-
-  // Ajustar la página si cambia visibleCount o la lista de items
-  useEffect(() => {
-    if (pagina >= totalPaginas) {
-      setPagina(0)
-    }
-  }, [visibleCount, items.length, totalPaginas, pagina])
-
-  const handlePrev = () => {
-    setPagina((prev) => (prev - 1 + totalPaginas) % totalPaginas)
-  }
-
-  const handleNext = () => {
-    setPagina((prev) => (prev + 1) % totalPaginas)
-  }
 
   return (
     <div className={styles.carruselWrapper}>
-      <button
-        className={styles.carruselBtn}
-        onClick={handlePrev}
-        aria-label="Anterior"
-      >
+      <button className={styles.carruselBtn} onClick={() => setPagina(p => (p - 1 + totalPaginas) % totalPaginas)} aria-label="Anterior">
         <ChevronLeft size={16} strokeWidth={2.5} />
       </button>
-
       <div className={styles.carruselVentana}>
         {visibles.map(item => renderCard(item))}
       </div>
-
-      <button
-        className={styles.carruselBtn}
-        onClick={handleNext}
-        aria-label="Siguiente"
-      >
+      <button className={styles.carruselBtn} onClick={() => setPagina(p => (p + 1) % totalPaginas)} aria-label="Siguiente">
         <ChevronRight size={16} strokeWidth={2.5} />
       </button>
-
       <div className={styles.dots}>
         {Array.from({ length: totalPaginas }).map((_, i) => (
           <button
             key={i}
-            className={`${styles.dot} ${i === pagina ? styles.dotActivo : ''}`}
+            className={`${styles.dot} ${i === paginaSegura ? styles.dotActivo : ''}`}
             onClick={() => setPagina(i)}
             aria-label={`Página ${i + 1}`}
           />
@@ -81,13 +95,36 @@ function Carrusel({ items, renderCard, visibleCount = 1 }) {
 export default function Home() {
   const navigate = useNavigate()
 
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024)
+  const [isDesktop, setIsDesktop]       = useState(window.innerWidth >= 1024)
+  const [productos, setProductos]       = useState([])
+  const [categorias, setCategorias]     = useState([])
+  const [cargandoProd, setCargandoProd] = useState(true)
+  const [cargandoCats, setCargandoCats] = useState(true)
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1024px)')
-    const handler = (e) => setIsDesktop(e.matches)
-    mediaQuery.addEventListener('change', handler)
-    return () => mediaQuery.removeEventListener('change', handler)
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const handler = e => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    async function cargarDatos() {
+      try {
+        const [resProd, resCats] = await Promise.all([
+          backendRESTAdapter.obtenerProductos({ filter: 'is_offer' }),
+          backendRESTAdapter.obtenerCategorias(),
+        ])
+        setProductos(resProd.data)
+        setCategorias(resCats.data)
+      } catch (err) {
+        console.error('Error cargando datos del home:', err)
+      } finally {
+        setCargandoProd(false)
+        setCargandoCats(false)
+      }
+    }
+    cargarDatos()
   }, [])
 
   const visibleCount = isDesktop ? 2 : 1
@@ -95,12 +132,9 @@ export default function Home() {
   return (
     <main className={styles.page}>
 
-      {/* ── HERO ── */}
+      {/* === HERO === */}
       <section className={styles.hero}>
-        <div
-          className={styles.heroBg}
-          style={{ backgroundImage: `url(${heroBg})` }}
-        />
+        <div className={styles.heroBg} style={{ backgroundImage: `url(${heroBg})` }} />
         <div className={styles.heroContenido}>
           <span className={styles.heroEyebrow}>Distribuidora Grifcam</span>
           <h1 className={styles.heroTitulo}>Bienvenidos a<br />Grifcam</h1>
@@ -114,75 +148,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CARRUSEL PRODUCTOS ── */}
+      {/* === CARRUSEL PRODUCTOS — skeleton mientras carga === */}
       <section className={styles.seccion}>
         <p className={styles.seccionTitulo}>Ofertas y destacados</p>
-        <Carrusel
-          items={MOCK_PRODUCTOS}
-          visibleCount={visibleCount}
-          renderCard={(item) => (
-            <div
-              key={item.id}
-              className={styles.productoCard}
-              onClick={() => navigate(`/producto/${item.id}`)}
-            >
-              <div className={styles.productoImg} />
-              <div className={styles.productoInfo}>
-                {item.badge && (
-                  <span className={`${styles.badge} ${
-                    item.badge === 'Nuevo'   ? styles.badgeNuevo   :
-                    item.badge === 'Popular' ? styles.badgePopular : ''
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-                <p className={styles.productoNombre}>{item.nombre}</p>
-                {item.precioAnterior && (
-                  <p className={styles.precioAnterior}>
-                    ₡ {item.precioAnterior.toLocaleString('es-CR')}
-                  </p>
-                )}
-                <p className={styles.precio}>
-                  ₡ {item.precio.toLocaleString('es-CR')}
-                </p>
-              </div>
-            </div>
-          )}
-        />
+        {cargandoProd ? (
+          <SkeletonCarrusel tipo="producto" cantidad={visibleCount} />
+        ) : productos.length > 0 ? (
+          <Carrusel
+            items={productos}
+            visibleCount={visibleCount}
+            renderCard={item => {
+              const imgUrl = getPrimeraImagen(item)
+              return (
+                <div
+                  key={item.id}
+                  className={styles.productoCard}
+                  onClick={() => navigate(`/producto/${item.id}`)}
+                >
+                  <div className={styles.productoImg}>
+                    {imgUrl && (
+                      <img src={imgUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+                  </div>
+                  <div className={styles.productoInfo}>
+                    {item.is_offer && <span className={styles.badge}>Oferta</span>}
+                    {item.is_new   && <span className={`${styles.badge} ${styles.badgeNuevo}`}>Nuevo</span>}
+                    <p className={styles.productoNombre}>{item.name}</p>
+                    {item.previous_price && (
+                      <p className={styles.precioAnterior}>₡ {Number(item.previous_price).toLocaleString('es-CR')}</p>
+                    )}
+                    <p className={styles.precio}>₡ {Number(item.price).toLocaleString('es-CR')}</p>
+                  </div>
+                </div>
+              )
+            }}
+          />
+        ) : (
+          <p className={styles.sinDatos}>No hay productos disponibles por el momento.</p>
+        )}
       </section>
 
-      {/* ── CARRUSEL CATEGORÍAS ── */}
+      {/* === CARRUSEL CATEGORÍAS — skeleton mientras carga === */}
       <section className={styles.seccion}>
         <p className={styles.seccionTitulo}>Categorías</p>
-        <Carrusel
-          items={MOCK_CATEGORIAS}
-          visibleCount={visibleCount}
-          renderCard={(cat) => (
-            <div
-              key={cat.id}
-              className={styles.categoriaCard}
-              onClick={() => navigate(`/catalogo?categoria=${cat.id}`)}
-            >
-              <div className={styles.categoriaIcono} />
-              <div>
-                <p className={styles.categoriaNombre}>{cat.nombre}</p>
-                <p className={styles.categoriaCantidad}>{cat.cantidad} productos</p>
+        {cargandoCats ? (
+          <SkeletonCarrusel tipo="categoria" cantidad={visibleCount} />
+        ) : categorias.length > 0 ? (
+          <Carrusel
+            items={categorias}
+            visibleCount={visibleCount}
+            renderCard={cat => (
+              <div
+                key={cat.id}
+                className={styles.categoriaCard}
+                onClick={() => navigate(`/catalogo?categoria=${cat.id}`)}
+              >
+                <div className={styles.categoriaIcono} />
+                <div>
+                  <p className={styles.categoriaNombre}>{cat.name}</p>
+                </div>
               </div>
-            </div>
-          )}
-        />
+            )}
+          />
+        ) : (
+          <p className={styles.sinDatos}>No hay categorías disponibles.</p>
+        )}
       </section>
 
-      {/* ── SOBRE NOSOTROS ── */}
+      {/* === SOBRE NOSOTROS === */}
       <section className={styles.seccion}>
         <p className={styles.seccionTitulo}>Sobre nosotros</p>
         <div className={styles.aboutCard}>
           <div className={styles.aboutImg} />
           <div className={styles.aboutCuerpo}>
             <p className={styles.aboutTitulo}>Distribuidora Grifcam</p>
-            <p className={styles.aboutTexto}>
-              Somos una distribuidora......
-            </p>
+            <p className={styles.aboutTexto}>{DESCRIPCION_CORTA}</p>
           </div>
         </div>
       </section>

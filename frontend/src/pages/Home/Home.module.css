@@ -166,6 +166,8 @@
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.15s ease;
+  /* Altura fija para que la imagen no la empuje */
+  height: 7rem;
 }
 
 .productoCard:hover {
@@ -175,9 +177,19 @@
 .productoImg {
   width: 38%;
   min-width: 38%;
-  aspect-ratio: 3 / 4;
+  height: 100%;           /* ocupa toda la altura de la tarjeta */
+  flex-shrink: 0;
   background-color: var(--color-surface-warm);
-  /* reemplazar con <img> cuando haya imágenes reales */
+  overflow: hidden;
+  position: relative;
+}
+
+.productoImg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* recorta sin distorsionar */
 }
 
 .productoInfo {
@@ -258,7 +270,6 @@
   border-radius: var(--radius-sm);
   background-color: var(--color-primary-light);
   flex-shrink: 0;
-  /* reemplazar con ícono real */
 }
 
 .categoriaNombre {
@@ -290,7 +301,6 @@
   width: 100%;
   height: 7.5rem;
   background-color: var(--color-primary);
-  /* reemplazar con fotoNegocio Grifcam /> */
 }
 
 .aboutCuerpo {
@@ -333,4 +343,111 @@
   .carruselVentana {
     gap: 0.75rem;
   }
+
+  .productoCard {
+    height: 8.5rem;   /* un poco más alta en desktop */
+  }
+}
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
+
+@keyframes shimmer {
+  0%   { background-position: -40rem 0; }
+  100% { background-position: 40rem 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    var(--color-surface) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 80rem 100%;
+  animation: shimmer 1.6s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+.skeletonCarruselBtn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeletonCard {
+  flex: 1;
+  min-width: 0;
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 7rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.skeletonImg {
+  width: 38%;
+  min-width: 38%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.skeletonInfo {
+  padding: 0.75rem 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.skeletonBadge {
+  width: 3rem;
+  height: 0.9rem;
+}
+
+.skeletonNombre {
+  width: 75%;
+  height: 0.85rem;
+}
+
+.skeletonPrecio {
+  width: 45%;
+  height: 1rem;
+}
+
+.skeletonCatCard {
+  flex: 1;
+  min-width: 0;
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.875rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.skeletonCatIcono {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.skeletonCatNombre {
+  flex: 1;
+  height: 0.85rem;
+  max-width: 8rem;
+}
+
+.sinDatos {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 1.5rem 0;
 }
