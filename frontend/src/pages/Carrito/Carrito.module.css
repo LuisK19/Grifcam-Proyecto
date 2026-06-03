@@ -1,0 +1,441 @@
+/* src/pages/Carrito/Carrito.module.css */
+
+/* ============================================================
+   PÁGINA
+   ============================================================ */
+
+.page {
+  background-color: var(--color-bg);
+  padding-top: 3rem;       /* topbar mobile */
+  padding-bottom: 5.5rem;  /* bottom nav mobile */
+  min-height: 100vh;
+}
+
+/* ============================================================
+   CARRITO VACÍO
+   ============================================================ */
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  min-height: 60vh;
+}
+
+.vacioIconoWrap {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.vacioIcono {
+  color: var(--color-primary);
+}
+
+.vacioTitulo {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.vacioDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  max-width: 18rem;
+  line-height: 1.55;
+}
+
+.vacioBtnCatalogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 0.5rem;
+  transition: opacity 0.15s ease;
+}
+
+.vacioBtnCatalogo:hover { opacity: 0.9; }
+
+/* ============================================================
+   ENCABEZADO
+   ============================================================ */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  gap: 1rem;
+}
+
+.titulo {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.subtitulo {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+.btnVaciar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: none;
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 0.375rem 0.875rem;
+  font-size: 0.775rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btnVaciar:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* ============================================================
+   LISTA DE PRODUCTOS
+   ============================================================ */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+}
+
+.itemCard {
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem;
+  transition: box-shadow 0.15s ease;
+}
+
+.itemCard:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Imagen */
+.itemImgWrap {
+  width: 4.5rem;
+  min-width: 4.5rem;
+  height: 4.5rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-surface-warm);
+  flex-shrink: 0;
+}
+
+.itemImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemImgPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-warm);
+}
+
+/* Info */
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.itemNombre {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemPrecioUnit {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.itemSubtotal {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.itemSubtotal strong {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* Controles de cantidad + eliminar */
+.itemAcciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cantidadCtrl {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-bg);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.25rem;
+}
+
+.cantidadBtn {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cantidadBtn:hover:not(:disabled) {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.cantidadBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cantidadNum {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.btnEliminar {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+}
+
+.btnEliminar:hover {
+  color: var(--color-error);
+}
+
+/* ============================================================
+   RESUMEN
+   ============================================================ */
+
+.resumen {
+  padding: 1rem 1.25rem 0;
+}
+
+.resumenCard {
+  background: var(--color-surface);
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resumenTitulo {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: var(--color-text);
+  padding-bottom: 0.5rem;
+  border-bottom: 0.0625rem solid var(--color-border);
+}
+
+.resumenLista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.resumenFila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.resumenNombre {
+  font-size: 0.825rem;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resumenCantidad {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.resumenMonto {
+  font-size: 0.825rem;
+  color: var(--color-text);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.resumenDivisor {
+  height: 0.0625rem;
+  background: var(--color-border);
+}
+
+.resumenTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resumenTotalLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.resumenTotalMonto {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.resumenNota {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Botón WhatsApp */
+.btnWhatsApp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+  width: 100%;
+}
+
+.btnWhatsApp:hover { opacity: 0.9; }
+
+/* Seguir comprando */
+.btnSeguir {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  background: none;
+  border: 0.0625rem solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+}
+
+.btnSeguir:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   DESKTOP
+   ============================================================ */
+
+@media (min-width: 64rem) {
+  .page {
+    padding-top: 0;
+    padding-bottom: 2.5rem;
+    max-width: 75rem;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 22rem;
+    grid-template-rows: auto 1fr;
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .header {
+    grid-column: 1 / 2;
+    padding: 2rem 0 1rem;
+  }
+
+  .lista {
+    grid-column: 1 / 2;
+    padding: 0;
+  }
+
+  .resumen {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    padding: 2rem 0 0;
+    position: sticky;
+    top: 5rem;
+  }
+}
