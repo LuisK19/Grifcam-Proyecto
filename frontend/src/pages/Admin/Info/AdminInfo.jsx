@@ -1,38 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Save, Loader, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminInfo.module.css'
+import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
-const MOCK_INFO = {
-  descripcion: 'Somos una distribuidora comprometida con la calidad y el servicio al cliente. Llevamos productos seleccionados directamente a tu negocio con los mejores precios del mercado.',
-  telefono:    '60759718',
-  email:       'distribuidoragrifcam@',
-  ubicacion:   'Limón, Costa Rica',
-  instagram:   'https://www.instagram.com/distribuidoragrifcam',
-  facebook:    'https://www.facebook.com/p/Distribuidora-Grifcam-100064027475626/',
-  maps_link:   'https://maps.app.goo.gl/iwWaicgNQLEyE6GQ7',
-  horario: [
-    { dia: 'Lunes',      horas: '8:30 a.m. – 6:00 p.m.', abierto: true  },
-    { dia: 'Martes',     horas: '8:30 a.m. – 6:00 p.m.', abierto: true  },
-    { dia: 'Miércoles',  horas: '8:30 a.m. – 6:00 p.m.', abierto: true  },
-    { dia: 'Jueves',     horas: '8:30 a.m. – 6:00 p.m.', abierto: true  },
-    { dia: 'Viernes',    horas: '8:30 a.m. – 5:00 p.m.', abierto: true  },
-    { dia: 'Sábado',     horas: 'Cerrado',                abierto: false },
-    { dia: 'Domingo',    horas: '8:30 a.m. – 12:00 p.m.', abierto: true },
-  ],
-  politicas: [
-    { id: 'p-1', titulo: 'Política de devoluciones', contenido: 'Los productos pueden ser devueltos dentro de los primeros 7 días naturales a partir de la fecha de compra, siempre que se encuentren en su estado original, sin uso y con el empaque intacto.' },
-    { id: 'p-2', titulo: 'Política de entregas',     contenido: 'Las entregas se coordinan directamente con el cliente según disponibilidad. El tiempo de entrega puede variar dependiendo de la zona.' },
-    { id: 'p-3', titulo: 'Política de pagos',        contenido: 'Aceptamos pagos en efectivo, transferencia bancaria y SINPE Móvil.' },
-  ],
-  videos: [
-    { id: 'v-1', titulo: 'Video publicitario 1', url: '' },
-    { id: 'v-2', titulo: 'Video publicitario 2', url: '' },
-  ],
-}
-let nextPoliticaId = 10
-let nextVideoId = 10
-
+// === Componente Sección acordeón ============================
 function Seccion({ titulo, children, defaultAbierta = true }) {
   const [abierta, setAbierta] = useState(defaultAbierta)
   return (
@@ -54,87 +26,172 @@ function Seccion({ titulo, children, defaultAbierta = true }) {
 }
 
 export default function AdminInfo() {
-  const [form, setForm]           = useState(MOCK_INFO)
+  // Estado de datos
+  const [businessId, setBusinessId] = useState(null)
+  const [form, setForm]             = useState({
+    descripcion_corta: '',
+    descripcion_larga: '',
+    telefono:          '',
+    whatsapp:          '',
+    email:             '',
+    ubicacion:         '',
+    maps_link:         '',
+    maps_embed:        '',
+    instagram:         '',
+    facebook:          '',
+  })
+  const [horario, setHorario]     = useState([])
+  const [politicas, setPoliticas] = useState([])
+  const [videos, setVideos]       = useState([])
+
+  // Estado de UI
+  const [cargando, setCargando]   = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [guardado, setGuardado]   = useState(false)
   const [errores, setErrores]     = useState({})
 
+  // === Carga inicial ==========================================
+  useEffect(() => {
+    async function cargar() {
+      setCargando(true)
+      try {
+        const [resBiz, resHor, resPol, resVid] = await Promise.allSettled([
+          backendRESTAdapter.obtenerBusiness(),
+          backendRESTAdapter.obtenerHorario(),
+          backendRESTAdapter.obtenerPoliticas(),
+          backendRESTAdapter.obtenerVideos(),
+        ])
+
+        if (resBiz.status === 'fulfilled') {
+          const biz = resBiz.value.data
+          setBusinessId(biz.id)
+          setForm({
+            descripcion_corta: biz.descripcion_corta ?? '',
+            descripcion_larga: biz.descripcion_larga ?? '',
+            telefono:          biz.telefono    ?? '',
+            whatsapp:          biz.whatsapp    ?? '',
+            email:             biz.email       ?? '',
+            ubicacion:         biz.ubicacion   ?? '',
+            maps_link:         biz.maps_link   ?? '',
+            maps_embed:        biz.maps_embed  ?? '',
+            instagram:         biz.instagram   ?? '',
+            facebook:          biz.facebook    ?? '',
+          })
+        }
+
+        if (resHor.status === 'fulfilled') setHorario(resHor.value.data)
+        if (resPol.status === 'fulfilled') setPoliticas(resPol.value.data)
+        if (resVid.status === 'fulfilled') setVideos(resVid.value.data)
+      } catch (err) {
+        console.error('Error cargando AdminInfo:', err)
+      } finally {
+        setCargando(false)
+      }
+    }
+    cargar()
+  }, [])
+
+  // === Cambios de form ============================================
   function handleChange(campo, valor) {
     setForm(prev => ({ ...prev, [campo]: valor }))
     if (errores[campo]) setErrores(prev => ({ ...prev, [campo]: '' }))
     setGuardado(false)
   }
 
+  // === Horario - cada día se guarda individualmente ============
   function handleHorario(idx, campo, valor) {
-    setForm(prev => {
-      const horario = [...prev.horario]
-      horario[idx] = { ...horario[idx], [campo]: valor }
-      return { ...prev, horario }
+    setHorario(prev => {
+      const nuevo = [...prev]
+      nuevo[idx] = { ...nuevo[idx], [campo]: valor }
+      return nuevo
     })
     setGuardado(false)
   }
 
+  // === Políticas ============================================
   function handlePolitica(id, campo, valor) {
-    setForm(prev => ({
-      ...prev,
-      politicas: prev.politicas.map(p => p.id === id ? { ...p, [campo]: valor } : p)
-    }))
+    setPoliticas(prev =>
+      prev.map(p => p.id === id ? { ...p, [campo]: valor } : p)
+    )
     setGuardado(false)
   }
 
-  function agregarPolitica() {
-    setForm(prev => ({
-      ...prev,
-      politicas: [
-        ...prev.politicas,
-        { id: `p-${nextPoliticaId++}`, titulo: '', contenido: '' }
-      ]
-    }))
+  async function agregarPolitica() {
+    try {
+      const res = await backendRESTAdapter.editarPolitica('nueva', {
+        titulo: '', contenido: '', orden: politicas.length + 1
+      })
+      // Si el endpoint de crear no existe aún, lo manejamos local
+      setPoliticas(prev => [...prev, res?.data ?? {
+        id: `local-${Date.now()}`, titulo: '', contenido: '', orden: prev.length + 1
+      }])
+    } catch {
+      // Fallback local mientras el endpoint POST no está disponible
+      setPoliticas(prev => [...prev, {
+        id: `local-${Date.now()}`, titulo: '', contenido: '', orden: prev.length + 1
+      }])
+    }
   }
 
-  function eliminarPolitica(id) {
-    setForm(prev => ({
-      ...prev,
-      politicas: prev.politicas.filter(p => p.id !== id)
-    }))
+  async function eliminarPolitica(id) {
+    try {
+      await backendRESTAdapter.editarPolitica(id, { _delete: true })
+    } catch {
+      // Si falla la API eliminamos local de todas formas
+    }
+    setPoliticas(prev => prev.filter(p => p.id !== id))
+    setGuardado(false)
   }
 
-  // Videos
+  // === Videos =========================================
   function handleVideo(id, campo, valor) {
-    setForm(prev => ({
-      ...prev,
-      videos: prev.videos.map(v => v.id === id ? { ...v, [campo]: valor } : v)
-    }))
+    setVideos(prev =>
+      prev.map(v => v.id === id ? { ...v, [campo]: valor } : v)
+    )
     setGuardado(false)
   }
 
-  function agregarVideo() {
-    setForm(prev => ({
-      ...prev,
-      videos: [...prev.videos, { id: `v-${nextVideoId++}`, titulo: '', url: '' }]
-    }))
+  async function agregarVideo() {
+    try {
+      const res = await backendRESTAdapter.editarVideo('nuevo', {
+        titulo: '', url: '', orden: videos.length + 1
+      })
+      setVideos(prev => [...prev, res?.data ?? {
+        id: `local-${Date.now()}`, titulo: '', url: '', orden: prev.length + 1
+      }])
+    } catch {
+      setVideos(prev => [...prev, {
+        id: `local-${Date.now()}`, titulo: '', url: '', orden: prev.length + 1
+      }])
+    }
   }
 
-  function eliminarVideo(id) {
-    setForm(prev => ({
-      ...prev,
-      videos: prev.videos.filter(v => v.id !== id)
-    }))
+  async function eliminarVideo(id) {
+    try {
+      await backendRESTAdapter.eliminarVideo(id)
+    } catch {
+      // eliminar local igualmente
+    }
+    setVideos(prev => prev.filter(v => v.id !== id))
+    setGuardado(false)
   }
 
+  // === Validación =============================================
   function validar() {
     const e = {}
-    if (!form.descripcion.trim()) e.descripcion = 'La descripción es requerida.'
-    if (!form.telefono.trim())    e.telefono    = 'El teléfono es requerido.'
-    if (!form.email.trim())       e.email       = 'El correo es requerido.'
-    if (!form.ubicacion.trim())   e.ubicacion   = 'La ubicación es requerida.'
-    form.politicas.forEach((p, i) => {
+    if (!form.descripcion_corta.trim()) e.descripcion_corta = 'Requerido.'
+    if (!form.descripcion_larga.trim()) e.descripcion_larga = 'Requerido.'
+    if (!form.telefono.trim())          e.telefono          = 'Requerido.'
+    if (!form.email.trim())             e.email             = 'Requerido.'
+    if (!form.ubicacion.trim())         e.ubicacion         = 'Requerido.'
+    politicas.forEach((p, i) => {
       if (!p.titulo.trim())    e[`pol_titulo_${i}`]    = 'Requerido.'
       if (!p.contenido.trim()) e[`pol_contenido_${i}`] = 'Requerido.'
     })
     return e
   }
 
+  // === Guardar todo ===========================================
   async function handleSubmit(e) {
     e.preventDefault()
     const nuevosErrores = validar()
@@ -142,15 +199,57 @@ export default function AdminInfo() {
       setErrores(nuevosErrores)
       return
     }
+
     setGuardando(true)
     try {
-      await new Promise(r => setTimeout(r, 800))
+      // 1. Guardar info del negocio
+      await backendRESTAdapter.editarBusiness(businessId, form)
+
+      // 2. Guardar cada día del horario individualmente
+      await Promise.all(
+        horario.map(dia => backendRESTAdapter.editarHorarioDia(dia.id, {
+          horas:   dia.abierto ? dia.horas : 'Cerrado',
+          abierto: dia.abierto,
+        }))
+      )
+
+      // 3. Guardar cada política individualmente
+      await Promise.all(
+        politicas
+          .filter(p => !p.id.startsWith('local-'))
+          .map(p => backendRESTAdapter.editarPolitica(p.id, {
+            titulo:   p.titulo,
+            contenido: p.contenido,
+          }))
+      )
+
+      // 4. Guardar cada video individualmente
+      await Promise.all(
+        videos
+          .filter(v => !v.id.startsWith('local-'))
+          .map(v => backendRESTAdapter.editarVideo(v.id, {
+            titulo: v.titulo,
+            url:    v.url,
+          }))
+      )
+
       setGuardado(true)
-    } catch {
+    } catch (err) {
+      console.error('Error guardando AdminInfo:', err)
       setErrores({ global: 'Ocurrió un error al guardar. Intentá de nuevo.' })
     } finally {
       setGuardando(false)
     }
+  }
+
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <div className={styles.page}>
+          <p style={{ opacity: 0.5, padding: '1rem 0' }}>Cargando información...</p>
+        </div>
+      </AdminLayout>
+    )
   }
 
   return (
@@ -165,23 +264,40 @@ export default function AdminInfo() {
 
         <form onSubmit={handleSubmit} noValidate className={styles.form}>
 
-          {/* DESCRIPCION */}
+          {/* DESCRIPCIÓN */}
           <Seccion titulo="Descripción del negocio">
             <div className={styles.campo}>
               <label className={styles.label}>
-                Descripción <span className={styles.requerido}>*</span>
+                Descripción corta (Home) <span className={styles.requerido}>*</span>
               </label>
               <textarea
-                className={`${styles.textarea} ${errores.descripcion ? styles.inputError : ''}`}
-                rows={4}
-                maxLength={600}
-                value={form.descripcion}
-                onChange={e => handleChange('descripcion', e.target.value)}
-                placeholder="Breve descripción del negocio..."
+                className={`${styles.textarea} ${errores.descripcion_corta ? styles.inputError : ''}`}
+                rows={2}
+                maxLength={200}
+                value={form.descripcion_corta}
+                onChange={e => handleChange('descripcion_corta', e.target.value)}
+                placeholder="Frase corta para la sección Sobre nosotros del Home..."
               />
               <div className={styles.textareaFooter}>
-                {errores.descripcion && <p className={styles.error}>{errores.descripcion}</p>}
-                <p className={styles.charCount}>{form.descripcion.length}/600</p>
+                {errores.descripcion_corta && <p className={styles.error}>{errores.descripcion_corta}</p>}
+                <p className={styles.charCount}>{form.descripcion_corta.length}/200</p>
+              </div>
+            </div>
+            <div className={styles.campo}>
+              <label className={styles.label}>
+                Descripción larga (página Info) <span className={styles.requerido}>*</span>
+              </label>
+              <textarea
+                className={`${styles.textarea} ${errores.descripcion_larga ? styles.inputError : ''}`}
+                rows={4}
+                maxLength={600}
+                value={form.descripcion_larga}
+                onChange={e => handleChange('descripcion_larga', e.target.value)}
+                placeholder="Descripción completa del negocio para la página de Información..."
+              />
+              <div className={styles.textareaFooter}>
+                {errores.descripcion_larga && <p className={styles.error}>{errores.descripcion_larga}</p>}
+                <p className={styles.charCount}>{form.descripcion_larga.length}/600</p>
               </div>
             </div>
           </Seccion>
@@ -190,7 +306,7 @@ export default function AdminInfo() {
           <Seccion titulo="Contacto">
             <div className={styles.camposGrid}>
               <div className={styles.campo}>
-                <label className={styles.label}>Teléfono / WhatsApp <span className={styles.requerido}>*</span></label>
+                <label className={styles.label}>Teléfono <span className={styles.requerido}>*</span></label>
                 <input
                   type="text"
                   className={`${styles.input} ${errores.telefono ? styles.inputError : ''}`}
@@ -200,6 +316,19 @@ export default function AdminInfo() {
                   maxLength={20}
                 />
                 {errores.telefono && <p className={styles.error}>{errores.telefono}</p>}
+              </div>
+
+              <div className={styles.campo}>
+                <label className={styles.label}>WhatsApp (con código de país)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={form.whatsapp}
+                  onChange={e => handleChange('whatsapp', e.target.value)}
+                  placeholder="Ej: 50660759718"
+                  maxLength={20}
+                />
+                <p className={styles.hint}>Se usa para el botón de pedidos en el carrito</p>
               </div>
 
               <div className={styles.campo}>
@@ -238,6 +367,18 @@ export default function AdminInfo() {
               </div>
 
               <div className={styles.campo}>
+                <label className={styles.label}>Embed de Google Maps</label>
+                <input
+                  type="url"
+                  className={styles.input}
+                  value={form.maps_embed}
+                  onChange={e => handleChange('maps_embed', e.target.value)}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                />
+                <p className={styles.hint}>Se obtiene en Google Maps → Compartir → Incorporar un mapa</p>
+              </div>
+
+              <div className={styles.campo}>
                 <label className={styles.label}>Instagram</label>
                 <input
                   type="url"
@@ -264,8 +405,8 @@ export default function AdminInfo() {
           {/* HORARIO */}
           <Seccion titulo="Horario de atención">
             <div className={styles.horarioLista}>
-              {form.horario.map((fila, idx) => (
-                <div key={fila.dia} className={styles.horarioFila}>
+              {horario.map((fila, idx) => (
+                <div key={fila.id ?? fila.dia} className={styles.horarioFila}>
                   <span className={styles.horarioDia}>{fila.dia}</span>
 
                   <label className={styles.horarioToggle}>
@@ -297,7 +438,7 @@ export default function AdminInfo() {
           {/* POLÍTICAS */}
           <Seccion titulo="Políticas">
             <div className={styles.politicasLista}>
-              {form.politicas.map((pol, idx) => (
+              {politicas.map((pol, idx) => (
                 <div key={pol.id} className={styles.politicaCard}>
                   <div className={styles.politicaHeader}>
                     <span className={styles.politicaNum}>{idx + 1}</span>
@@ -349,7 +490,7 @@ export default function AdminInfo() {
           {/* VIDEOS */}
           <Seccion titulo="Videos" defaultAbierta={false}>
             <div className={styles.videosLista}>
-              {form.videos.map((vid, idx) => (
+              {videos.map((vid, idx) => (
                 <div key={vid.id} className={styles.videoCard}>
                   <div className={styles.politicaHeader}>
                     <span className={styles.politicaNum}>Video {idx + 1}</span>

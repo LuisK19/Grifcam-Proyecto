@@ -1,58 +1,74 @@
-// TODO: reemplazar MOCK con fetch real:
+// src/pages/ProductDetail/ProductDetail.jsx
+// Vista de detalle de producto — conectado a la API REST
+// TODO: actualizar WHATSAPP_NUMBER cuando esté disponible
+// TODO: conectar agregarAlCarrito() con useCarrito() cuando se integre el contexto
+
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, ChevronLeft, ChevronRight, X, ShoppingCart, MessageCircle } from 'lucide-react'
 import styles from './ProductDetail.module.css'
+import backendRESTAdapter from '../../adapter/backendRESTAdapter'
+import { useCarrito } from '../../context/CarritoContext'
 
-import img1 from '../../assets/harina.png'
-import img2 from '../../assets/Harina2.png'
-import img3 from '../../assets/Bandeja1.jpg'
-
-const MOCK_PRODUCT = {
-  id:          'p-1',
-  name:        'Harina Especial',
-  description: 'Harina de trigo de alta calidad, ideal para panadería y repostería. Enriquecida con vitaminas y minerales. Producto importado con certificación de calidad.',
-  price:       2500,
-  price_before: 3200,   // null si no hay descuento
-  category_id: 'cat-1',
-  category_name: 'Lácteos',
-  sku:         'HAR-001',
-  is_offer:    true,
-  is_new:      false,
-  images:      [img1, img2, img3],  
-}
-
-const MOCK_RELACIONADOS = [
-  { id: 'p-3',  name: 'Producto 3',  price: 1200, image_url: null, is_offer: true,  is_new: false },
-  { id: 'p-5',  name: 'Producto 5',  price: 2900, image_url: null, is_offer: false, is_new: false },
-  { id: 'p-7',  name: 'Producto 7',  price: 1800, image_url: null, is_offer: false, is_new: true  },
-  { id: 'p-9',  name: 'Producto 9',  price: 990,  image_url: null, is_offer: true,  is_new: false },
-]
-
-
+// TODO: mover a variable de entorno cuando esté definido el número real
 const WHATSAPP_NUMBER = '50600000000'
+
+// Devuelve array de URLs ordenadas por image_order
+// Supabase Storage ya devuelve URLs completas
+function getImagenes(product) {
+  if (!product?.product_images || product.product_images.length === 0) return []
+  return [...product.product_images]
+    .sort((a, b) => a.image_order - b.image_order)
+    .map(img => img.image_url)
+}
 
 export default function ProductDetail() {
   const navigate  = useNavigate()
   const location  = useLocation()
   const { id }    = useParams()
+  const { agregar } = useCarrito()
+  const [product, setProduct]           = useState(null)
+  const [relacionados, setRelacionados] = useState([])
+  const [cargando, setCargando]         = useState(true)
+  const [error, setError]               = useState('')
 
-  const product   = MOCK_PRODUCT   
-  const relacionados = MOCK_RELACIONADOS
+  const [imgActiva, setImgActiva] = useState(0)
+  const [lightbox, setLightbox]   = useState(false)
+  const [cantidad, setCantidad]   = useState(1)
 
-  const [imgActiva, setImgActiva]     = useState(0)
-  const [lightbox, setLightbox]       = useState(false)
-  const [cantidad, setCantidad]       = useState(1)
+  // Cargar producto y relacionados desde la API
+  useEffect(() => {
+    async function cargar() {
+      setCargando(true)
+      setError('')
+      setImgActiva(0)
+      try {
+        const res      = await backendRESTAdapter.obtenerProductoPorId(id)
+        const producto = res.data
+        setProduct(producto)
 
-  const total = product.images.length
+        // Relacionados: misma categoría, excluye el producto actual
+        const resRel = await backendRESTAdapter.obtenerProductos({
+          category: producto.category_id,
+        })
+        setRelacionados(resRel.data.filter(p => p.id !== producto.id).slice(0, 4))
+      } catch (err) {
+        console.error('Error cargando producto:', err)
+        setError('No se pudo cargar el producto.')
+      } finally {
+        setCargando(false)
+      }
+    }
+    cargar()
+  }, [id])
 
-  const anterior = useCallback(() =>
-    setImgActiva(i => (i - 1 + total) % total), [total])
+  const imagenes = getImagenes(product)
+  const total    = imagenes.length
 
-  const siguiente = useCallback(() =>
-    setImgActiva(i => (i + 1) % total), [total])
+  const anterior  = useCallback(() => setImgActiva(i => (i - 1 + total) % total), [total])
+  const siguiente = useCallback(() => setImgActiva(i => (i + 1) % total), [total])
 
-  // Cerrar lightbox con Escape
+  // Navegar con teclado en el lightbox
   useEffect(() => {
     function onKey(e) {
       if (!lightbox) return
@@ -65,54 +81,82 @@ export default function ProductDetail() {
   }, [lightbox, anterior, siguiente])
 
   function volverAlCatalogo() {
-    if (location.state?.from) {
-      navigate(-1)
-    } else {
-      navigate('/catalogo')
-    }
+    if (location.state?.from) navigate(-1)
+    else navigate('/catalogo')
   }
 
   function consultarWhatsApp() {
+    if (!product) return
     const msg = encodeURIComponent(
-      `Hola, me interesa el producto:\n*${product.name}*\nCódigo: ${product.sku}\nPrecio: ₡ ${product.price.toLocaleString('es-CR')}\n\n¿Está disponible?`
+      `Hola, me interesa el producto:\n*${product.name}*\nPrecio: ₡ ${Number(product.price).toLocaleString('es-CR')}\n\n¿Está disponible?`
     )
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank')
   }
 
   function agregarAlCarrito() {
-    console.log('Agregar al carrito:', { product, cantidad })
+    agregar(product, cantidad)
   }
 
-  const descuento = product.price_before
-    ? Math.round((1 - product.price / product.price_before) * 100)
+  // === ESTADOS DE CARGA / ERROR ===
+
+  if (cargando) {
+    return (
+      <main className={styles.page}>
+        <p style={{ textAlign: 'center', padding: '3rem', opacity: 0.5 }}>Cargando producto...</p>
+      </main>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <main className={styles.page}>
+        <button className={styles.btnVolver} onClick={volverAlCatalogo}>
+          <ArrowLeft size={18} strokeWidth={2} />
+          <span>Catálogo</span>
+        </button>
+        <p style={{ textAlign: 'center', padding: '3rem', color: 'red' }}>
+          {error || 'Producto no encontrado.'}
+        </p>
+      </main>
+    )
+  }
+
+  // La API devuelve previous_price (no price_before)
+  const descuento = product.previous_price
+    ? Math.round((1 - product.price / product.previous_price) * 100)
     : null
+
+  // La API devuelve el nombre de categoría en product.categories.name
+  const categoriaNombre = product.categories?.name ?? ''
 
   return (
     <main className={styles.page}>
 
-      {/* ── BOTÓN VOLVER ── */}
+      {/* === BOTÓN VOLVER === */}
       <button className={styles.btnVolver} onClick={volverAlCatalogo}>
         <ArrowLeft size={18} strokeWidth={2} />
         <span>Catálogo</span>
       </button>
 
-      {/* ── CONTENIDO PRINCIPAL ── */}
+      {/* === CONTENIDO PRINCIPAL === */}
       <div className={styles.contenido}>
 
-        {/* ── GALERÍA DE IMÁGENES ── */}
+        {/* === GALERÍA DE IMÁGENES === */}
         <div className={styles.galeria}>
 
-          {/* Imagen principal */}
           <div className={styles.imgPrincipalWrap}>
-            <img
-              src={product.images[imgActiva]}
-              alt={`${product.name} - imagen ${imgActiva + 1}`}
-              className={styles.imgPrincipal}
-              onClick={() => setLightbox(true)}
-              draggable={false}
-            />
+            {imagenes.length > 0 ? (
+              <img
+                src={imagenes[imgActiva]}
+                alt={`${product.name} - imagen ${imgActiva + 1}`}
+                className={styles.imgPrincipal}
+                onClick={() => setLightbox(true)}
+                draggable={false}
+              />
+            ) : (
+              <div className={styles.imgPrincipal} style={{ background: 'var(--color-surface-warm)' }} />
+            )}
 
-            {/* Flechas sobre la imagen */}
             {total > 1 && (
               <>
                 <button className={`${styles.flechaImg} ${styles.flechaIzq}`} onClick={anterior} aria-label="Anterior">
@@ -124,20 +168,24 @@ export default function ProductDetail() {
               </>
             )}
 
-            {/* Badges sobre la imagen */}
             <div className={styles.imgBadges}>
-              {product.is_offer && <span className={styles.badgeOferta}>Oferta {descuento}% off</span>}
-              {product.is_new   && <span className={styles.badgeNuevo}>Nuevo</span>}
+              {product.is_offer && (
+                <span className={styles.badgeOferta}>
+                  Oferta {descuento ? `${descuento}% off` : ''}
+                </span>
+              )}
+              {product.is_new && <span className={styles.badgeNuevo}>Nuevo</span>}
             </div>
 
-            {/* Indicador de click para ampliar */}
-            <span className={styles.ampliarHint}>Toca para ampliar</span>
+            {imagenes.length > 0 && (
+              <span className={styles.ampliarHint}>Toca para ampliar</span>
+            )}
           </div>
 
           {/* Miniaturas */}
           {total > 1 && (
             <div className={styles.miniaturas}>
-              {product.images.map((img, i) => (
+              {imagenes.map((img, i) => (
                 <button
                   key={i}
                   className={`${styles.miniatura} ${i === imgActiva ? styles.miniaturaActiva : ''}`}
@@ -151,39 +199,33 @@ export default function ProductDetail() {
           )}
         </div>
 
-        {/* ── PANEL DE INFORMACIÓN ── */}
+        {/* === PANEL DE INFORMACIÓN === */}
         <div className={styles.info}>
 
-          {/* Categoría + SKU */}
           <div className={styles.metaRow}>
-            <span className={styles.categoria}>{product.category_name}</span>
-            <span className={styles.sku}>SKU: {product.sku}</span>
+            <span className={styles.categoria}>{categoriaNombre}</span>
           </div>
 
-          {/* Nombre */}
           <h1 className={styles.nombre}>{product.name}</h1>
 
-          {/* Precio */}
           <div className={styles.precioWrap}>
-            {product.price_before && (
+            {product.previous_price && (
               <span className={styles.precioAnterior}>
-                ₡ {product.price_before.toLocaleString('es-CR')}
+                ₡ {Number(product.previous_price).toLocaleString('es-CR')}
               </span>
             )}
             <span className={styles.precio}>
-              ₡ {product.price.toLocaleString('es-CR')}
+              ₡ {Number(product.price).toLocaleString('es-CR')}
             </span>
             {descuento && (
               <span className={styles.descuentoBadge}>-{descuento}%</span>
             )}
           </div>
 
-          {/* Descripción */}
           <p className={styles.descripcion}>{product.description}</p>
 
           <div className={styles.separador} />
 
-          {/* Cantidad */}
           <div className={styles.cantidadRow}>
             <span className={styles.cantidadLabel}>Cantidad</span>
             <div className={styles.cantidadCtrl}>
@@ -193,7 +235,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Botones de acción */}
           <div className={styles.acciones}>
             <button className={styles.btnCarrito} onClick={agregarAlCarrito}>
               <ShoppingCart size={17} strokeWidth={2} />
@@ -208,35 +249,42 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* ── PRODUCTOS RELACIONADOS ── */}
-      <section className={styles.relacionados}>
-        <p className={styles.relacionadosTitulo}>Productos relacionados</p>
-        <div className={styles.relacionadosGrid}>
-          {relacionados.map(p => (
-            <div
-              key={p.id}
-              className={styles.relCard}
-              onClick={() => { navigate(`/producto/${p.id}`); setImgActiva(0) }}
-            >
-              <div className={styles.relImgWrap}>
-                {p.image_url
-                  ? <img src={p.image_url} alt={p.name} className={styles.relImg} />
-                  : <div className={styles.relImgPlaceholder} />
-                }
-                {p.is_offer && <span className={styles.relBadge}>Oferta</span>}
-                {p.is_new   && <span className={`${styles.relBadge} ${styles.relBadgeNuevo}`}>Nuevo</span>}
-              </div>
-              <div className={styles.relInfo}>
-                <p className={styles.relNombre}>{p.name}</p>
-                <p className={styles.relPrecio}>₡ {p.price.toLocaleString('es-CR')}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* === PRODUCTOS RELACIONADOS === */}
+      {relacionados.length > 0 && (
+        <section className={styles.relacionados}>
+          <p className={styles.relacionadosTitulo}>Productos relacionados</p>
+          <div className={styles.relacionadosGrid}>
+            {relacionados.map(p => {
+              const relImg = p.product_images?.length > 0
+                ? [...p.product_images].sort((a, b) => a.image_order - b.image_order)[0].image_url
+                : null
+              return (
+                <div
+                  key={p.id}
+                  className={styles.relCard}
+                  onClick={() => { navigate(`/producto/${p.id}`); setImgActiva(0) }}
+                >
+                  <div className={styles.relImgWrap}>
+                    {relImg
+                      ? <img src={relImg} alt={p.name} className={styles.relImg} />
+                      : <div className={styles.relImgPlaceholder} />
+                    }
+                    {p.is_offer && <span className={styles.relBadge}>Oferta</span>}
+                    {p.is_new   && <span className={`${styles.relBadge} ${styles.relBadgeNuevo}`}>Nuevo</span>}
+                  </div>
+                  <div className={styles.relInfo}>
+                    <p className={styles.relNombre}>{p.name}</p>
+                    <p className={styles.relPrecio}>₡ {Number(p.price).toLocaleString('es-CR')}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
-      {/* ── LIGHTBOX ── */}
-      {lightbox && (
+      {/* === LIGHTBOX === */}
+      {lightbox && imagenes.length > 0 && (
         <div className={styles.lightboxOverlay} onClick={() => setLightbox(false)}>
           <button className={styles.lightboxCerrar} onClick={() => setLightbox(false)} aria-label="Cerrar">
             <X size={22} strokeWidth={2} />
@@ -252,7 +300,7 @@ export default function ProductDetail() {
           )}
 
           <img
-            src={product.images[imgActiva]}
+            src={imagenes[imgActiva]}
             alt={product.name}
             className={styles.lightboxImg}
             onClick={e => e.stopPropagation()}

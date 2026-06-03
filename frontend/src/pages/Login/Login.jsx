@@ -1,17 +1,22 @@
+// src/pages/Login/Login.jsx
+// Pantalla de inicio de sesión del administrador
+// Accesible únicamente por URL directa: /admin/login
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, User } from 'lucide-react'
 import styles from './Login.module.css'
 import Logo from '../../assets/blanco.png'
+import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
 export default function Login() {
   const navigate = useNavigate()
 
-  const [usuario, setUsuario]       = useState('')
-  const [password, setPassword]     = useState('')
-  const [verPass, setVerPass]       = useState(false)
-  const [cargando, setCargando]     = useState(false)
-  const [error, setError]           = useState('')
+  const [usuario, setUsuario]   = useState('')
+  const [password, setPassword] = useState('')
+  const [verPass, setVerPass]   = useState(false)
+  const [cargando, setCargando] = useState(false)
+  const [error, setError]       = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -23,17 +28,17 @@ export default function Login() {
     }
 
     setCargando(true)
-
     try {
-      // TODO: reemplazar con llamada real a la API
-      await new Promise(r => setTimeout(r, 1000))
-      if (usuario === 'admin' && password === '1234') {
-        navigate('/admin')
-      } else {
-        setError('Usuario o contraseña incorrectos.')
-      }
-    } catch {
-      setError('Ocurrió un error. Intentá de nuevo.')
+      const res = await backendRESTAdapter.loginUsuario({
+        username: usuario,
+        password: password,
+      })
+      localStorage.setItem('token', res.data.token)
+      localStorage.setItem('user', JSON.stringify(res.data.user))
+      navigate('/admin')
+    } catch (err) {
+      const msg = err.response?.data?.message
+      setError(msg || 'Usuario o contraseña incorrectos.')
     } finally {
       setCargando(false)
     }
@@ -79,10 +84,7 @@ export default function Login() {
               <button
                 type="button"
                 className={styles.olvideLinkBtn}
-                onClick={() => {
-                  // TODO: implementar flujo de recuperación de contraseña
-                  alert('Contactá al administrador del sistema.')
-                }}
+                onClick={() => alert('Contactá al administrador del sistema.')}
               >
                 ¿Olvidaste tu contraseña?
               </button>
