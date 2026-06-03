@@ -11,6 +11,8 @@ import AdminProductos from './pages/Admin/Productos/AdminProductos'
 import AdminProductoForm from './pages/Admin/ProductosForm/AdminProductoForm'
 import AdminCategorias from './pages/Admin/Categorias/AdminCategorias'
 import AdminInfo from './pages/Admin/Info/AdminInfo'
+import Carrito from './pages/Carrito/Carrito'
+
 
 
 function AppContent() {
@@ -24,6 +26,7 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/catalogo" element={<Catalogo />} />
         <Route path="/producto/:id" element={<ProductDetail />} />
+        <Route path="/carrito" element={<Carrito />} />
         <Route path="/info" element={<Info />} />
         
         <Route path="/admin" element={<AdminDashboard />} />

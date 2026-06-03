@@ -1,0 +1,57 @@
+import api from '../services/api';
+
+const backendRESTAdapter = {
+
+  loginUsuario: (data) => api.post('/auth/login', data),
+
+
+  // GET /products
+  // Soporta filtros opcionales:
+  //   obtenerProductos({ category: 'uuid' })
+  //   obtenerProductos({ filter: 'is_offer' })
+  //   obtenerProductos({ filter: 'is_new' })
+  //   obtenerProductos()  → trae todos
+  obtenerProductos: (params) => api.get('/products', { params }),
+
+  // GET /products/:id
+  obtenerProductoPorId: (id) => api.get(`/products/${id}`),
+
+  // POST /products  ← requiere token JWT en el header
+  // data debe ser un FormData (porque incluye imágenes)
+  // Ejemplo de cómo armarlo en React:
+  //   const formData = new FormData();
+  //   formData.append('name', nombre);
+  //   formData.append('price', precio);
+  //   formData.append('previous_price', precioAnterior); // opcional
+  //   formData.append('category_id', categoriaId);
+  //   formData.append('is_offer', esOferta);
+  //   formData.append('is_new', esNuevo);
+  //   formData.append('images', archivo1);  // hasta 3 veces
+  //   formData.append('images', archivo2);
+  crearProducto: (data) => api.post('/products', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  // PUT /products/:id  ← requiere token JWT
+  // data debe ser FormData igual que crearProducto
+  // Si no se incluyen imágenes nuevas, se mantienen las anteriores
+  editarProducto: (id, data) => api.put(`/products/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  // DELETE /products/:id  ← requiere token JWT
+  eliminarProducto: (id) => api.delete(`/products/${id}`),
+
+
+  // ── Categorías ────────────────────────────────────────────
+  // GET /categories → devuelve todas las categorías
+  // El frontend las usa para mostrar los filtros del catálogo
+  // Ejemplo de respuesta:
+  //   [{ id: 'uuid', name: 'Lácteos' }, { id: 'uuid', name: 'Harinas' }, ...]
+  obtenerCategorias: () => api.get('/categories'),
+
+  // GET /categories/:id
+  obtenerCategoriaPorId: (id) => api.get(`/categories/${id}`),
+};
+
+export default backendRESTAdapter;
