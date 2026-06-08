@@ -1,18 +1,11 @@
-import { useState } from 'react'
+// src/pages/Admin/Categorias/AdminCategorias.jsx
+// Gestión de categorías — conectada a la API
+
+import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, X, Check, Tag } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminCategorias.module.css'
-
-const MOCK_CATEGORIAS_INIT = [
-  { id: 'cat-1', name: 'Lácteos',    cantidad: 3 },
-  { id: 'cat-2', name: 'Bebidas',    cantidad: 4 },
-  { id: 'cat-3', name: 'Snacks',     cantidad: 2 },
-  { id: 'cat-4', name: 'Limpieza',   cantidad: 2 },
-  { id: 'cat-5', name: 'Panadería',  cantidad: 1 },
-  { id: 'cat-6', name: 'Congelados', cantidad: 1 },
-]
-
-let nextId = 100
+import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
 function ModalConfirmar({ categoria, onConfirmar, onCancelar }) {
   if (!categoria) return null
@@ -38,14 +31,33 @@ function ModalConfirmar({ categoria, onConfirmar, onCancelar }) {
 }
 
 export default function AdminCategorias() {
-  const [categorias, setCategorias]   = useState(MOCK_CATEGORIAS_INIT)
-  const [aEliminar, setAEliminar]     = useState(null)
+  const [categorias, setCategorias] = useState([])
+  const [cargando, setCargando]     = useState(true)
+  const [aEliminar, setAEliminar]   = useState(null)
+  const [guardando, setGuardando]   = useState(false)
 
-  // Panel de crear/editar
+  // Panel crear/editar
   const [panelAbierto, setPanelAbierto] = useState(false)
-  const [editandoId, setEditandoId]     = useState(null) // null = creando
+  const [editandoId, setEditandoId]     = useState(null)
   const [inputNombre, setInputNombre]   = useState('')
   const [errorNombre, setErrorNombre]   = useState('')
+
+  // Carga inicial
+  useEffect(() => {
+    async function cargar() {
+      setCargando(true)
+      try {
+        const res = await backendRESTAdapter.obtenerCategorias()
+        // La API devuelve { id, name } — cantidad la calculamos aparte si hace falta
+        setCategorias(res.data.map(c => ({ ...c, cantidad: c.cantidad ?? 0 })))
+      } catch (err) {
+        console.error('Error cargando categorías:', err)
+      } finally {
+        setCargando(false)
+      }
+    }
+    cargar()
+  }, [])
 
   function abrirCrear() {
     setEditandoId(null)
@@ -68,7 +80,7 @@ export default function AdminCategorias() {
     setErrorNombre('')
   }
 
-  function guardar() {
+  async function guardar() {
     const nombre = inputNombre.trim()
     if (!nombre) {
       setErrorNombre('El nombre es requerido.')
@@ -82,16 +94,32 @@ export default function AdminCategorias() {
       return
     }
 
-    if (editandoId) {
-      setCategorias(prev =>
-        prev.map(c => c.id === editandoId ? { ...c, name: nombre } : c)
-      )
-    } else {
-      // Crear
-      const nueva = { id: `cat-${nextId++}`, name: nombre, cantidad: 0 }
-      setCategorias(prev => [...prev, nueva])
+    setGuardando(true)
+    try {
+      if (editandoId) {
+        // Editar — PUT /api/categories/:id
+        await backendRESTAdapter.obtenerCategoriaPorId(editandoId) // verificar que existe
+        // TODO: cuando Keingell agregue PUT /api/categories/:id usar:
+        // await backendRESTAdapter.editarCategoria(editandoId, { name: nombre })
+        setCategorias(prev =>
+          prev.map(c => c.id === editandoId ? { ...c, name: nombre } : c)
+        )
+      } else {
+        // Crear — POST /api/categories
+        // TODO: cuando Keingell agregue POST /api/categories usar:
+        // const res = await backendRESTAdapter.crearCategoria({ name: nombre })
+        // setCategorias(prev => [...prev, res.data])
+        setCategorias(prev => [...prev, {
+          id: `temp-${Date.now()}`, name: nombre, cantidad: 0
+        }])
+      }
+      cerrarPanel()
+    } catch (err) {
+      console.error('Error guardando categoría:', err)
+      setErrorNombre('Error al guardar. Intentá de nuevo.')
+    } finally {
+      setGuardando(false)
     }
-    cerrarPanel()
   }
 
   function handleKeyDown(e) {
@@ -99,8 +127,14 @@ export default function AdminCategorias() {
     if (e.key === 'Escape') cerrarPanel()
   }
 
-  function confirmarEliminar(id) {
-    setCategorias(prev => prev.filter(c => c.id !== id))
+  async function confirmarEliminar(id) {
+    try {
+      // TODO: cuando Keingell agregue DELETE /api/categories/:id usar:
+      // await backendRESTAdapter.eliminarCategoria(id)
+      setCategorias(prev => prev.filter(c => c.id !== id))
+    } catch (err) {
+      console.error('Error eliminando categoría:', err)
+    }
     setAEliminar(null)
   }
 
@@ -112,7 +146,9 @@ export default function AdminCategorias() {
         <div className={styles.topRow}>
           <div>
             <h1 className={styles.titulo}>Categorías</h1>
-            <p className={styles.subtitulo}>{categorias.length} categorías en total</p>
+            <p className={styles.subtitulo}>
+              {cargando ? 'Cargando...' : `${categorias.length} categorías en total`}
+            </p>
           </div>
           <button className={styles.btnNuevo} onClick={abrirCrear}>
             <Plus size={16} strokeWidth={2} />
@@ -144,13 +180,16 @@ export default function AdminCategorias() {
                     onKeyDown={handleKeyDown}
                     autoFocus
                     maxLength={50}
+                    disabled={guardando}
                   />
                 </div>
-                <button className={styles.btnGuardarPanel} onClick={guardar} title="Guardar">
+                <button className={styles.btnGuardarPanel} onClick={guardar}
+                  title="Guardar" disabled={guardando}>
                   <Check size={16} strokeWidth={2.5} />
-                  {editandoId ? 'Guardar' : 'Crear'}
+                  {guardando ? 'Guardando...' : editandoId ? 'Guardar' : 'Crear'}
                 </button>
-                <button className={styles.btnCancelarPanel} onClick={cerrarPanel} title="Cancelar">
+                <button className={styles.btnCancelarPanel} onClick={cerrarPanel}
+                  title="Cancelar" disabled={guardando}>
                   <X size={16} strokeWidth={2} />
                 </button>
               </div>
@@ -160,16 +199,25 @@ export default function AdminCategorias() {
           </div>
         )}
 
-        {/* LISTA DE CATEGORIAS */}
-        {categorias.length > 0 ? (
+        {/* LISTA */}
+        {cargando ? (
+          <div className={styles.lista}>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className={styles.fila}>
+                <span className={styles.filaNum}>{i + 1}</span>
+                <div className={styles.filaIcono} />
+                <div className={styles.filaNombre}>
+                  <div className={styles.skeletonLinea} style={{ width: '40%' }} />
+                  <div className={styles.skeletonLinea} style={{ width: '25%', marginTop: '0.25rem' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : categorias.length > 0 ? (
           <div className={styles.lista}>
             {categorias.map((cat, idx) => (
               <div key={cat.id} className={styles.fila}>
-
-                {/* Número */}
                 <span className={styles.filaNum}>{idx + 1}</span>
-
-                {/* Icono + nombre */}
                 <div className={styles.filaIcono}>
                   <Tag size={15} strokeWidth={1.8} />
                 </div>
@@ -179,25 +227,14 @@ export default function AdminCategorias() {
                     {cat.cantidad} producto{cat.cantidad !== 1 ? 's' : ''}
                   </p>
                 </div>
-
-                {/* Acciones */}
                 <div className={styles.filaAcciones}>
-                  <button
-                    className={styles.btnEditar}
-                    onClick={() => abrirEditar(cat)}
-                    title="Editar"
-                  >
+                  <button className={styles.btnEditar} onClick={() => abrirEditar(cat)} title="Editar">
                     <Pencil size={14} strokeWidth={2} />
                   </button>
-                  <button
-                    className={styles.btnEliminar}
-                    onClick={() => setAEliminar(cat)}
-                    title="Eliminar"
-                  >
+                  <button className={styles.btnEliminar} onClick={() => setAEliminar(cat)} title="Eliminar">
                     <Trash2 size={14} strokeWidth={2} />
                   </button>
                 </div>
-
               </div>
             ))}
           </div>
@@ -214,7 +251,6 @@ export default function AdminCategorias() {
 
       </div>
 
-      {/* MODAL CONFIRMAR ELIMINAR */}
       <ModalConfirmar
         categoria={aEliminar}
         onConfirmar={confirmarEliminar}

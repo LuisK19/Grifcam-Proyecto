@@ -1,4 +1,7 @@
-import { useState, useMemo } from 'react'
+// src/pages/Admin/Productos/AdminProductos.jsx
+// Lista de productos del panel administrativo — conectada a la API
+
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Search, X, Plus, Pencil, Trash2,
@@ -6,33 +9,7 @@ import {
 } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminProductos.module.css'
-import AdminProductoForm from '../../../pages/Admin/ProductosForm/AdminProductoForm'
-
-const MOCK_CATEGORIES = [
-  { id: 'cat-1', name: 'Lácteos'    },
-  { id: 'cat-2', name: 'Bebidas'    },
-  { id: 'cat-3', name: 'Snacks'     },
-  { id: 'cat-4', name: 'Limpieza'   },
-  { id: 'cat-5', name: 'Panadería'  },
-  { id: 'cat-6', name: 'Congelados' },
-]
-
-const MOCK_PRODUCTS_INIT = [
-  { id: 'p-1',  name: 'Producto 1',  price: 2500,  category_id: 'cat-1', image_url: null, is_offer: true,  is_new: false, is_featured: true  },
-  { id: 'p-2',  name: 'Producto 2',  price: 3800,  category_id: 'cat-2', image_url: null, is_offer: false, is_new: true,  is_featured: false },
-  { id: 'p-3',  name: 'Producto 3',  price: 1200,  category_id: 'cat-1', image_url: null, is_offer: true,  is_new: false, is_featured: false },
-  { id: 'p-4',  name: 'Producto 4',  price: 4500,  category_id: 'cat-3', image_url: null, is_offer: false, is_new: true,  is_featured: true  },
-  { id: 'p-5',  name: 'Producto 5',  price: 2900,  category_id: 'cat-2', image_url: null, is_offer: false, is_new: false, is_featured: false },
-  { id: 'p-6',  name: 'Producto 6',  price: 3600,  category_id: 'cat-4', image_url: null, is_offer: true,  is_new: false, is_featured: true  },
-  { id: 'p-7',  name: 'Producto 7',  price: 1800,  category_id: 'cat-3', image_url: null, is_offer: false, is_new: true,  is_featured: false },
-  { id: 'p-8',  name: 'Producto 8',  price: 5200,  category_id: 'cat-5', image_url: null, is_offer: false, is_new: false, is_featured: false },
-  { id: 'p-9',  name: 'Producto 9',  price: 990,   category_id: 'cat-6', image_url: null, is_offer: true,  is_new: false, is_featured: false },
-  { id: 'p-10', name: 'Producto 10', price: 6800,  category_id: 'cat-2', image_url: null, is_offer: false, is_new: true,  is_featured: false },
-]
-
-function nombreCategoria(id) {
-  return MOCK_CATEGORIES.find(c => c.id === id)?.name ?? '—'
-}
+import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
 function ModalConfirmar({ producto, onConfirmar, onCancelar }) {
   if (!producto) return null
@@ -56,37 +33,94 @@ export default function AdminProductos() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [productos, setProductos]       = useState(MOCK_PRODUCTS_INIT)
-  const [busqueda, setBusqueda]         = useState('')
-  const [filtro, setFiltro]             = useState(searchParams.get('filtro') || 'todos')
-  const [catFiltro, setCatFiltro]       = useState('todas')
-  const [aEliminar, setAEliminar]       = useState(null)
+  const [productos, setProductos]   = useState([])
+  const [categorias, setCategorias] = useState([])
+  const [cargando, setCargando]     = useState(true)
+  const [error, setError]           = useState('')
+
+  const [busqueda, setBusqueda]   = useState('')
+  const [filtro, setFiltro]       = useState(searchParams.get('filtro') || 'todos')
+  const [catFiltro, setCatFiltro] = useState('todas')
+  const [aEliminar, setAEliminar] = useState(null)
+
+  // Carga inicial
+  useEffect(() => {
+    async function cargar() {
+      setCargando(true)
+      setError('')
+      try {
+        const [resProd, resCats] = await Promise.all([
+          backendRESTAdapter.obtenerProductos(),
+          backendRESTAdapter.obtenerCategorias(),
+        ])
+        setProductos(resProd.data)
+        setCategorias(resCats.data)
+      } catch (err) {
+        console.error('Error cargando productos:', err)
+        setError('No se pudieron cargar los productos.')
+      } finally {
+        setCargando(false)
+      }
+    }
+    cargar()
+  }, [])
+
+  // Nombre de categoría por ID
+  function nombreCategoria(id) {
+    return categorias.find(c => c.id === id)?.name ?? '—'
+  }
 
   const productosFiltrados = useMemo(() => {
     let res = productos
-
     if (filtro === 'oferta')    res = res.filter(p => p.is_offer)
     if (filtro === 'nuevo')     res = res.filter(p => p.is_new)
     if (filtro === 'destacado') res = res.filter(p => p.is_featured)
-
     if (catFiltro !== 'todas')  res = res.filter(p => p.category_id === catFiltro)
-
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase()
       res = res.filter(p => p.name.toLowerCase().includes(q))
     }
-
     return res
   }, [productos, filtro, catFiltro, busqueda])
 
-  function toggleFlag(id, flag) {
+  // Toggle de flag — actualiza local + llama API
+  async function toggleFlag(id, flag) {
+    const producto = productos.find(p => p.id === id)
+    if (!producto) return
+    const nuevoValor = !producto[flag]
+
+    // Actualización optimista
     setProductos(prev =>
-      prev.map(p => p.id === id ? { ...p, [flag]: !p[flag] } : p)
+      prev.map(p => p.id === id ? { ...p, [flag]: nuevoValor } : p)
     )
+
+    try {
+      const formData = new FormData()
+      formData.append('name',        producto.name)
+      formData.append('description', producto.description ?? '')
+      formData.append('price',       producto.price)
+      formData.append('category_id', producto.category_id)
+      formData.append('is_offer',    flag === 'is_offer'    ? nuevoValor : producto.is_offer)
+      formData.append('is_new',      flag === 'is_new'      ? nuevoValor : producto.is_new)
+      formData.append('is_featured', flag === 'is_featured' ? nuevoValor : (producto.is_featured ?? false))
+      await backendRESTAdapter.editarProducto(id, formData)
+    } catch (err) {
+      console.error('Error toggleando flag:', err)
+      // Revertir si falla
+      setProductos(prev =>
+        prev.map(p => p.id === id ? { ...p, [flag]: !nuevoValor } : p)
+      )
+    }
   }
 
-  function confirmarEliminar(id) {
-    setProductos(prev => prev.filter(p => p.id !== id))
+  // Eliminar producto
+  async function confirmarEliminar(id) {
+    try {
+      await backendRESTAdapter.eliminarProducto(id)
+      setProductos(prev => prev.filter(p => p.id !== id))
+    } catch (err) {
+      console.error('Error eliminando producto:', err)
+    }
     setAEliminar(null)
   }
 
@@ -95,33 +129,43 @@ export default function AdminProductos() {
     setSearchParams(nuevo === 'todos' ? {} : { filtro: nuevo })
   }
 
+  // Primera imagen del producto
+  function getPrimeraImagen(product) {
+    if (!product.product_images?.length) return null
+    return [...product.product_images]
+      .sort((a, b) => a.image_order - b.image_order)[0].image_url
+  }
+
   const filtros = [
-    { key: 'todos',    label: 'Todos'      },
-    { key: 'oferta',   label: 'Oferta'     },
-    { key: 'nuevo',    label: 'Nuevo'      },
-    { key: 'destacado',label: 'Destacado'  },
+    { key: 'todos',     label: 'Todos'     },
+    { key: 'oferta',    label: 'Oferta'    },
+    { key: 'nuevo',     label: 'Nuevo'     },
+    { key: 'destacado', label: 'Destacado' },
   ]
 
   return (
     <AdminLayout>
       <div className={styles.page}>
 
-        {/* ── ENCABEZADO ── */}
+        {/* ENCABEZADO */}
         <div className={styles.topRow}>
           <div>
             <h1 className={styles.titulo}>Productos</h1>
-            <p className={styles.subtitulo}>{productos.length} productos en total</p>
+            <p className={styles.subtitulo}>
+              {cargando ? 'Cargando...' : `${productos.length} productos en total`}
+            </p>
           </div>
-          <button
-            className={styles.btnNuevo}
-            onClick={() => navigate('/admin/productos/nuevo')}
-          >
+          <button className={styles.btnNuevo} onClick={() => navigate('/admin/productos/nuevo')}>
             <Plus size={16} strokeWidth={2} />
             Nuevo producto
           </button>
         </div>
 
-        {/* ── BÚSQUEDA + FILTRO CATEGORÍA ── */}
+        {error && (
+          <p style={{ color: 'var(--color-error)', fontSize: '0.875rem' }}>{error}</p>
+        )}
+
+        {/* BÚSQUEDA + FILTRO CATEGORÍA */}
         <div className={styles.searchRow}>
           <div className={styles.searchBox}>
             <Search size={15} className={styles.searchIcono} strokeWidth={2} />
@@ -146,7 +190,7 @@ export default function AdminProductos() {
               onChange={e => setCatFiltro(e.target.value)}
             >
               <option value="todas">Todas las categorías</option>
-              {MOCK_CATEGORIES.map(c => (
+              {categorias.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -154,7 +198,7 @@ export default function AdminProductos() {
           </div>
         </div>
 
-        {/* ── CHIPS DE FILTRO ── */}
+        {/* CHIPS */}
         <div className={styles.chips}>
           {filtros.map(f => (
             <button
@@ -167,13 +211,13 @@ export default function AdminProductos() {
           ))}
         </div>
 
-        {/* ── CONTADOR ── */}
+        {/* CONTADOR */}
         <p className={styles.contador}>
-          {productosFiltrados.length} {productosFiltrados.length === 1 ? 'producto' : 'productos'}
+          {cargando ? '...' : `${productosFiltrados.length} ${productosFiltrados.length === 1 ? 'producto' : 'productos'}`}
         </p>
 
-        {/* ── TABLA DE PRODUCTOS ── */}
-        {productosFiltrados.length > 0 ? (
+        {/* TABLA */}
+        {cargando ? (
           <div className={styles.tablaWrap}>
             <table className={styles.tabla}>
               <thead>
@@ -187,84 +231,108 @@ export default function AdminProductos() {
                 </tr>
               </thead>
               <tbody>
-                {productosFiltrados.map(product => (
-                  <tr key={product.id} className={styles.fila}>
-
-                    {/* Imagen */}
-                    <td className={styles.tdImg}>
-                      <div className={styles.miniImg}>
-                        {product.image_url
-                          ? <img src={product.image_url} alt={product.name} className={styles.miniImgEl} />
-                          : <div className={styles.miniImgPlaceholder} />
-                        }
-                      </div>
-                    </td>
-
-                    {/* Nombre + ID */}
-                    <td className={styles.tdNombre}>
-                      <p className={styles.productoNombre}>{product.name}</p>
-                      <p className={styles.productoId}>#{product.id}</p>
-                    </td>
-
-                    {/* Categoría */}
-                    <td className={styles.tdCat}>
-                      <span className={styles.catBadge}>{nombreCategoria(product.category_id)}</span>
-                    </td>
-
-                    {/* Precio */}
-                    <td className={styles.tdPrecio}>
-                      ₡ {product.price.toLocaleString('es-CR')}
-                    </td>
-
-                    {/* Flags toggleables */}
-                    <td className={styles.tdFlags}>
-                      <div className={styles.flagsRow}>
-                        <button
-                          className={`${styles.flagBtn} ${product.is_offer ? styles.flagBtnOferta : ''}`}
-                          onClick={() => toggleFlag(product.id, 'is_offer')}
-                          title="Oferta"
-                        >
-                          <TrendingUp size={13} strokeWidth={2} />
-                        </button>
-                        <button
-                          className={`${styles.flagBtn} ${product.is_new ? styles.flagBtnNuevo : ''}`}
-                          onClick={() => toggleFlag(product.id, 'is_new')}
-                          title="Nuevo"
-                        >
-                          <Sparkles size={13} strokeWidth={2} />
-                        </button>
-                        <button
-                          className={`${styles.flagBtn} ${product.is_featured ? styles.flagBtnDestacado : ''}`}
-                          onClick={() => toggleFlag(product.id, 'is_featured')}
-                          title="Destacado"
-                        >
-                          <Star size={13} strokeWidth={2} />
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Acciones */}
-                    <td className={styles.tdAcciones}>
-                      <div className={styles.accionesRow}>
-                        <button
-                          className={styles.btnEditar}
-                          onClick={() => navigate(`/admin/productos/${product.id}/editar`)}
-                          title="Editar"
-                        >
-                          <Pencil size={14} strokeWidth={2} />
-                        </button>
-                        <button
-                          className={styles.btnEliminarFila}
-                          onClick={() => setAEliminar(product)}
-                          title="Eliminar"
-                        >
-                          <Trash2 size={14} strokeWidth={2} />
-                        </button>
-                      </div>
-                    </td>
-
+                {[...Array(5)].map((_, i) => (
+                  <tr key={i} className={styles.fila}>
+                    <td><div className={`${styles.miniImg} ${styles.skeleton}`} /></td>
+                    <td><div className={styles.skeletonLinea} style={{ width: '60%' }} /></td>
+                    <td><div className={styles.skeletonLinea} style={{ width: '50%' }} /></td>
+                    <td><div className={styles.skeletonLinea} style={{ width: '40%' }} /></td>
+                    <td><div className={styles.skeletonLinea} style={{ width: '70%' }} /></td>
+                    <td><div className={styles.skeletonLinea} style={{ width: '50%' }} /></td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        ) : productosFiltrados.length > 0 ? (
+          <div className={styles.tablaWrap}>
+            <table className={styles.tabla}>
+              <thead>
+                <tr>
+                  <th className={styles.thImg} />
+                  <th className={styles.thNombre}>Nombre</th>
+                  <th className={styles.thCat}>Categoría</th>
+                  <th className={styles.thPrecio}>Precio</th>
+                  <th className={styles.thFlags}>Flags</th>
+                  <th className={styles.thAcciones}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productosFiltrados.map(product => {
+                  const imgUrl = getPrimeraImagen(product)
+                  return (
+                    <tr key={product.id} className={styles.fila}>
+
+                      <td className={styles.tdImg}>
+                        <div className={styles.miniImg}>
+                          {imgUrl
+                            ? <img src={imgUrl} alt={product.name} className={styles.miniImgEl} />
+                            : <div className={styles.miniImgPlaceholder} />
+                          }
+                        </div>
+                      </td>
+
+                      <td className={styles.tdNombre}>
+                        <p className={styles.productoNombre}>{product.name}</p>
+                        <p className={styles.productoId}>#{product.id.slice(0, 8)}</p>
+                      </td>
+
+                      <td className={styles.tdCat}>
+                        <span className={styles.catBadge}>{nombreCategoria(product.category_id)}</span>
+                      </td>
+
+                      <td className={styles.tdPrecio}>
+                        ₡ {Number(product.price).toLocaleString('es-CR')}
+                      </td>
+
+                      <td className={styles.tdFlags}>
+                        <div className={styles.flagsRow}>
+                          <button
+                            className={`${styles.flagBtn} ${product.is_offer ? styles.flagBtnOferta : ''}`}
+                            onClick={() => toggleFlag(product.id, 'is_offer')}
+                            title="Oferta"
+                          >
+                            <TrendingUp size={13} strokeWidth={2} />
+                          </button>
+                          <button
+                            className={`${styles.flagBtn} ${product.is_new ? styles.flagBtnNuevo : ''}`}
+                            onClick={() => toggleFlag(product.id, 'is_new')}
+                            title="Nuevo"
+                          >
+                            <Sparkles size={13} strokeWidth={2} />
+                          </button>
+                          <button
+                            className={`${styles.flagBtn} ${product.is_featured ? styles.flagBtnDestacado : ''}`}
+                            onClick={() => toggleFlag(product.id, 'is_featured')}
+                            title="Destacado"
+                          >
+                            <Star size={13} strokeWidth={2} />
+                          </button>
+                        </div>
+                      </td>
+
+                      <td className={styles.tdAcciones}>
+                        <div className={styles.accionesRow}>
+                          <button
+                            className={styles.btnEditar}
+                            onClick={() => navigate(`/admin/productos/${product.id}/editar`)}
+                            title="Editar"
+                          >
+                            <Pencil size={14} strokeWidth={2} />
+                          </button>
+                          <button
+                            className={styles.btnEliminarFila}
+                            onClick={() => setAEliminar(product)}
+                            title="Eliminar"
+                          >
+                            <Trash2 size={14} strokeWidth={2} />
+                          </button>
+                        </div>
+                      </td>
+
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -282,7 +350,6 @@ export default function AdminProductos() {
 
       </div>
 
-      {/* ── MODAL CONFIRMAR ELIMINAR ── */}
       <ModalConfirmar
         producto={aEliminar}
         onConfirmar={confirmarEliminar}

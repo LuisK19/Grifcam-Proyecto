@@ -1,3 +1,7 @@
+// src/pages/Admin/ProductosForm/AdminProductoForm.jsx
+// Formulario para crear y editar productos — conectado a la API
+// Al crear: is_new se activa automáticamente y se desactiva a los 7 días (configurado en la BD)
+
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -6,27 +10,7 @@ import {
 } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminProductoForm.module.css'
-
-// Cambiar en crear nuevo que auto seleccione la flag de nuevo y poner un timer para que se quite sola después 
-const MOCK_CATEGORIES = [
-  { id: 'cat-1', name: 'Lácteos'    },
-  { id: 'cat-2', name: 'Bebidas'    },
-  { id: 'cat-3', name: 'Snacks'     },
-  { id: 'cat-4', name: 'Limpieza'   },
-  { id: 'cat-5', name: 'Panadería'  },
-  { id: 'cat-6', name: 'Congelados' },
-]
-
-const MOCK_PRODUCTS = {
-  'p-1': {
-    id: 'p-1', name: 'Producto 1',
-    description: 'Descripción del producto 1.',
-    price: 2500, price_before: 3200,
-    category_id: 'cat-1',
-    images: [], 
-    is_offer: true, is_new: false, is_featured: true, featured_badge: 'Oferta'
-  },
-}
+import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
 const FORM_INICIAL = {
   name:           '',
@@ -35,15 +19,13 @@ const FORM_INICIAL = {
   price_before:   '',
   category_id:    '',
   is_offer:       false,
-  is_new:         false,
+  is_new:         true,   // al crear, se marca como nuevo por defecto
   is_featured:    false,
   featured_badge: '',
 }
 
 const BADGE_OPCIONES = ['', 'Oferta', 'Nuevo', 'Popular']
-// ─────────────────────────────────────────────────────────
 
-// Cada imagen en el estado tiene: { id, src (URL), file (File|null), esExistente }
 let nextImgId = 1
 
 export default function AdminProductoForm() {
@@ -55,32 +37,50 @@ export default function AdminProductoForm() {
   const [form, setForm]           = useState(FORM_INICIAL)
   const [errores, setErrores]     = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [cargando, setCargando]   = useState(esEdicion) // solo carga en edición
+  const [categorias, setCategorias] = useState([])
   const [imagenes, setImagenes]   = useState([]) // { id, src, file, esExistente }
-  const [lightbox, setLightbox]   = useState(null) // índice de imagen ampliada
+  const [lightbox, setLightbox]   = useState(null)
 
-  // Cargar datos si es edición
+  // Cargar categorías y datos del producto (si es edición)
   useEffect(() => {
-    if (!esEdicion) return
-    const producto = MOCK_PRODUCTS[id]
-    if (!producto) return
-    setForm({
-      name:           producto.name,
-      description:    producto.description,
-      price:          String(producto.price),
-      price_before:   producto.price_before ? String(producto.price_before) : '',
-      category_id:    producto.category_id,
-      is_offer:       producto.is_offer,
-      is_new:         producto.is_new,
-      is_featured:    producto.is_featured,
-      featured_badge: producto.featured_badge ?? '',
-    })
-    const imgs = (producto.images ?? []).map(url => ({
-      id: nextImgId++,
-      src: url,
-      file: null,
-      esExistente: true,
-    }))
-    setImagenes(imgs)
+    async function cargar() {
+      try {
+        const resCats = await backendRESTAdapter.obtenerCategorias()
+        setCategorias(resCats.data)
+
+        if (esEdicion) {
+          const resProd = await backendRESTAdapter.obtenerProductoPorId(id)
+          const producto = resProd.data
+          setForm({
+            name:           producto.name,
+            description:    producto.description ?? '',
+            price:          String(producto.price),
+            price_before:   producto.previous_price ? String(producto.previous_price) : '',
+            category_id:    producto.category_id,
+            is_offer:       producto.is_offer,
+            is_new:         producto.is_new,
+            is_featured:    producto.is_featured ?? false,
+            featured_badge: producto.featured_badge ?? '',
+          })
+          // Cargar imágenes existentes desde product_images[]
+          const imgs = (producto.product_images ?? [])
+            .sort((a, b) => a.image_order - b.image_order)
+            .map(img => ({
+              id:          nextImgId++,
+              src:         img.image_url,
+              file:        null,
+              esExistente: true,
+            }))
+          setImagenes(imgs)
+        }
+      } catch (err) {
+        console.error('Error cargando formulario:', err)
+      } finally {
+        setCargando(false)
+      }
+    }
+    cargar()
   }, [id, esEdicion])
 
   function handleChange(e) {
@@ -106,17 +106,16 @@ export default function AdminProductoForm() {
     setImagenes(prev => {
       const nuevas = prev.filter(img => img.id !== imgId)
       if (lightbox !== null) {
-        const nuevoIdx = Math.min(lightbox, nuevas.length - 1)
-        setLightbox(nuevas.length > 0 ? nuevoIdx : null)
+        setLightbox(nuevas.length > 0 ? Math.min(lightbox, nuevas.length - 1) : null)
       }
       return nuevas
     })
   }
 
-  function abrirLightbox(idx) { setLightbox(idx) }
-  function cerrarLightbox()   { setLightbox(null) }
-  function lightboxAnterior() { setLightbox(i => (i - 1 + imagenes.length) % imagenes.length) }
-  function lightboxSiguiente(){ setLightbox(i => (i + 1) % imagenes.length) }
+  function abrirLightbox(idx)   { setLightbox(idx) }
+  function cerrarLightbox()     { setLightbox(null) }
+  function lightboxAnterior()   { setLightbox(i => (i - 1 + imagenes.length) % imagenes.length) }
+  function lightboxSiguiente()  { setLightbox(i => (i + 1) % imagenes.length) }
 
   function validar() {
     const e = {}
@@ -138,22 +137,55 @@ export default function AdminProductoForm() {
       setErrores(nuevosErrores)
       return
     }
+
     setGuardando(true)
     try {
-      await new Promise(r => setTimeout(r, 800))
+      const formData = new FormData()
+      formData.append('name',           form.name)
+      formData.append('description',    form.description)
+      formData.append('price',          form.price)
+      formData.append('previous_price', form.price_before || '')
+      formData.append('category_id',    form.category_id)
+      formData.append('is_offer',       form.is_offer)
+      formData.append('is_new',         form.is_new)
+      formData.append('is_featured',    form.is_featured)
+      if (form.featured_badge) formData.append('featured_badge', form.featured_badge)
+
+      // Imágenes nuevas (las que el usuario acaba de seleccionar)
+      imagenes
+        .filter(img => !img.esExistente)
+        .forEach(img => formData.append('images', img.file))
+
+      if (esEdicion) {
+        await backendRESTAdapter.editarProducto(id, formData)
+      } else {
+        await backendRESTAdapter.crearProducto(formData)
+      }
+
       navigate('/admin/productos')
-    } catch {
-      setErrores({ global: 'Ocurrió un error. Intentá de nuevo.' })
+    } catch (err) {
+      console.error('Error guardando producto:', err)
+      setErrores({ global: 'Ocurrió un error al guardar. Intentá de nuevo.' })
     } finally {
       setGuardando(false)
     }
+  }
+
+  if (cargando) {
+    return (
+      <AdminLayout>
+        <div className={styles.page}>
+          <p style={{ opacity: 0.5, padding: '1rem 0' }}>Cargando producto...</p>
+        </div>
+      </AdminLayout>
+    )
   }
 
   return (
     <AdminLayout>
       <div className={styles.page}>
 
-        {/* ── ENCABEZADO ── */}
+        {/* ENCABEZADO */}
         <div className={styles.encabezado}>
           <button className={styles.btnVolver} onClick={() => navigate('/admin/productos')}>
             <ArrowLeft size={16} strokeWidth={2} />
@@ -166,7 +198,7 @@ export default function AdminProductoForm() {
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
 
-          {/* FILA SUPERIOR: flags izq + info der */}
+          {/* GRID SUPERIOR */}
           <div className={styles.formGrid}>
 
             {/* Columna izquierda — flags */}
@@ -254,7 +286,7 @@ export default function AdminProductoForm() {
                     value={form.category_id} onChange={handleChange}
                     className={`${styles.select} ${errores.category_id ? styles.inputError : ''}`}>
                     <option value="">Seleccionar categoría...</option>
-                    {MOCK_CATEGORIES.map(c => (
+                    {categorias.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
@@ -294,72 +326,52 @@ export default function AdminProductoForm() {
             </div>
           </div>
 
-          {/* SECCION IMAGENES — ancho completo */}
+          {/* SECCIÓN IMÁGENES */}
           <div className={styles.seccion}>
             <div className={styles.imagenesHeader}>
               <p className={styles.seccionTitulo} style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>
                 Imágenes del producto
-                <span className={styles.imagenesContador}>{imagenes.length} imagen{imagenes.length !== 1 ? 'es' : ''}</span>
+                <span className={styles.imagenesContador}>
+                  {imagenes.length} imagen{imagenes.length !== 1 ? 'es' : ''}
+                </span>
               </p>
-              <button
-                type="button"
-                className={styles.btnAgregarImg}
-                onClick={() => inputFileRef.current?.click()}
-              >
+              <button type="button" className={styles.btnAgregarImg}
+                onClick={() => inputFileRef.current?.click()}>
                 <ImagePlus size={15} strokeWidth={2} />
                 Agregar imágenes
               </button>
             </div>
 
-            <input
-              ref={inputFileRef}
-              type="file"
+            <input ref={inputFileRef} type="file"
               accept="image/jpeg,image/png,image/webp"
-              multiple
-              className={styles.inputFileOculto}
-              onChange={handleAgregarImagenes}
-            />
+              multiple className={styles.inputFileOculto}
+              onChange={handleAgregarImagenes} />
 
             {imagenes.length > 0 ? (
               <div className={styles.imagenesGrid}>
                 {imagenes.map((img, idx) => (
                   <div key={img.id} className={styles.imagenCard}>
-                    <img
-                      src={img.src}
-                      alt={`Imagen ${idx + 1}`}
+                    <img src={img.src} alt={`Imagen ${idx + 1}`}
                       className={styles.imagenThumb}
-                      onClick={() => abrirLightbox(idx)}
-                    />
+                      onClick={() => abrirLightbox(idx)} />
                     {!img.esExistente && (
                       <span className={styles.imagenNuevaBadge}>Nueva</span>
                     )}
-                    <button
-                      type="button"
-                      className={styles.imagenEliminarBtn}
-                      onClick={() => eliminarImagen(img.id)}
-                      aria-label="Eliminar imagen"
-                    >
+                    <button type="button" className={styles.imagenEliminarBtn}
+                      onClick={() => eliminarImagen(img.id)} aria-label="Eliminar imagen">
                       <X size={12} strokeWidth={2.5} />
                     </button>
                   </div>
                 ))}
-
-                {/* Botón agregar más dentro de la cuadrícula */}
-                <button
-                  type="button"
-                  className={styles.imagenAgregarCard}
-                  onClick={() => inputFileRef.current?.click()}
-                >
+                <button type="button" className={styles.imagenAgregarCard}
+                  onClick={() => inputFileRef.current?.click()}>
                   <ImagePlus size={22} strokeWidth={1.5} className={styles.imagenAgregarIcono} />
                   <span className={styles.imagenAgregarTexto}>Agregar</span>
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                className={styles.imagenesVacio}
-                onClick={() => inputFileRef.current?.click()}
-              >
+              <button type="button" className={styles.imagenesVacio}
+                onClick={() => inputFileRef.current?.click()}>
                 <ImagePlus size={30} strokeWidth={1.3} className={styles.imagenIcono} />
                 <span className={styles.imagenTexto}>Tocá para agregar imágenes</span>
                 <span className={styles.imagenSubtexto}>JPG, PNG, WebP — podés seleccionar varias a la vez</span>
@@ -367,12 +379,12 @@ export default function AdminProductoForm() {
             )}
           </div>
 
-          {/* ── ERROR GLOBAL ── */}
+          {/* ERROR GLOBAL */}
           {errores.global && (
             <p className={styles.errorGlobal}>{errores.global}</p>
           )}
 
-          {/* ── BOTONES ── */}
+          {/* BOTONES */}
           <div className={styles.formBtns}>
             <button type="button" className={styles.btnCancelar}
               onClick={() => navigate('/admin/productos')} disabled={guardando}>
@@ -389,38 +401,26 @@ export default function AdminProductoForm() {
         </form>
       </div>
 
-      {/*  LIGHTBOX  */}
+      {/* LIGHTBOX */}
       {lightbox !== null && imagenes.length > 0 && (
         <div className={styles.lightboxOverlay} onClick={cerrarLightbox}>
           <button className={styles.lightboxCerrar} onClick={cerrarLightbox}>
             <X size={20} strokeWidth={2} />
           </button>
-
           {imagenes.length > 1 && (
-            <button
-              className={`${styles.lightboxFlecha} ${styles.lightboxFlechaIzq}`}
-              onClick={e => { e.stopPropagation(); lightboxAnterior() }}
-            >
+            <button className={`${styles.lightboxFlecha} ${styles.lightboxFlechaIzq}`}
+              onClick={e => { e.stopPropagation(); lightboxAnterior() }}>
               <ChevronLeft size={26} strokeWidth={2} />
             </button>
           )}
-
-          <img
-            src={imagenes[lightbox]?.src}
-            alt={`Imagen ${lightbox + 1}`}
-            className={styles.lightboxImg}
-            onClick={e => e.stopPropagation()}
-          />
-
+          <img src={imagenes[lightbox]?.src} alt={`Imagen ${lightbox + 1}`}
+            className={styles.lightboxImg} onClick={e => e.stopPropagation()} />
           {imagenes.length > 1 && (
-            <button
-              className={`${styles.lightboxFlecha} ${styles.lightboxFlechaDer}`}
-              onClick={e => { e.stopPropagation(); lightboxSiguiente() }}
-            >
+            <button className={`${styles.lightboxFlecha} ${styles.lightboxFlechaDer}`}
+              onClick={e => { e.stopPropagation(); lightboxSiguiente() }}>
               <ChevronRight size={26} strokeWidth={2} />
             </button>
           )}
-
           <p className={styles.lightboxContador}>{lightbox + 1} / {imagenes.length}</p>
         </div>
       )}

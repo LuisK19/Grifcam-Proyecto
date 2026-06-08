@@ -387,3 +387,22 @@
 }
 
 .btnEliminarModal:hover { opacity: 0.9; }
+
+/* === SKELETON === */
+@keyframes shimmer {
+  0%   { background-position: -40rem 0; }
+  100% { background-position: 40rem 0; }
+}
+
+.skeletonLinea {
+  height: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    var(--color-surface) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 80rem 100%;
+  animation: shimmer 1.6s infinite linear;
+}

@@ -2,56 +2,66 @@ import api from '../services/api';
 
 const backendRESTAdapter = {
 
+  // ── Autenticación ─────────────────────────────────────────
   loginUsuario: (data) => api.post('/auth/login', data),
 
-
-  // GET /products
-  // Soporta filtros opcionales:
-  //   obtenerProductos({ category: 'uuid' })
-  //   obtenerProductos({ filter: 'is_offer' })
-  //   obtenerProductos({ filter: 'is_new' })
-  //   obtenerProductos()  → trae todos
-  obtenerProductos: (params) => api.get('/products', { params }),
-
-  // GET /products/:id
-  obtenerProductoPorId: (id) => api.get(`/products/${id}`),
-
-  // POST /products  ← requiere token JWT en el header
-  // data debe ser un FormData (porque incluye imágenes)
-  // Ejemplo de cómo armarlo en React:
-  //   const formData = new FormData();
-  //   formData.append('name', nombre);
-  //   formData.append('price', precio);
-  //   formData.append('previous_price', precioAnterior); // opcional
-  //   formData.append('category_id', categoriaId);
-  //   formData.append('is_offer', esOferta);
-  //   formData.append('is_new', esNuevo);
-  //   formData.append('images', archivo1);  // hasta 3 veces
-  //   formData.append('images', archivo2);
-  crearProducto: (data) => api.post('/products', data, {
+  // ── Productos ─────────────────────────────────────────────
+  obtenerProductos:      (params) => api.get('/products', { params }),
+  obtenerProductoPorId:  (id)     => api.get(`/products/${id}`),
+  crearProducto:  (data) => api.post('/products', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-
-  // PUT /products/:id  ← requiere token JWT
-  // data debe ser FormData igual que crearProducto
-  // Si no se incluyen imágenes nuevas, se mantienen las anteriores
   editarProducto: (id, data) => api.put(`/products/${id}`, data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-
-  // DELETE /products/:id  ← requiere token JWT
   eliminarProducto: (id) => api.delete(`/products/${id}`),
 
-
   // ── Categorías ────────────────────────────────────────────
-  // GET /categories → devuelve todas las categorías
-  // El frontend las usa para mostrar los filtros del catálogo
-  // Ejemplo de respuesta:
-  //   [{ id: 'uuid', name: 'Lácteos' }, { id: 'uuid', name: 'Harinas' }, ...]
-  obtenerCategorias: () => api.get('/categories'),
-
-  // GET /categories/:id
+  obtenerCategorias:     ()   => api.get('/categories'),
   obtenerCategoriaPorId: (id) => api.get(`/categories/${id}`),
+
+  // ── Info del negocio ──────────────────────────────────────
+  // GET /api/business → devuelve la única fila de business_info
+  obtenerBusiness: () => api.get('/business'),
+
+  // PUT /api/business/:id → edita la info del negocio
+  // data: { descripcion_corta, descripcion_larga, telefono,
+  //         whatsapp, email, ubicacion, maps_link, maps_embed,
+  //         instagram, facebook }
+  editarBusiness: (id, data) => api.put(`/business/${id}`, data),
+
+  // ── Horario ───────────────────────────────────────────────
+  // GET /api/horario → array de 7 días ordenados
+  obtenerHorario: () => api.get('/horario'),
+
+  // PUT /api/horario/:id → edita un día específico
+  // data: { horas: '8:00 a.m. – 6:00 p.m.', abierto: true }
+  editarHorarioDia: (id, data) => api.put(`/horario/${id}`, data),
+
+  // ── Políticas ─────────────────────────────────────────────
+  // GET /api/politicas → array de políticas ordenadas
+  obtenerPoliticas: () => api.get('/politicas'),
+
+  // PUT /api/politicas/:id → edita una política
+  // data: { titulo: '...', contenido: '...' }
+  editarPolitica: (id, data) => api.put(`/politicas/${id}`, data),
+
+  // ── Videos ────────────────────────────────────────────────
+  // GET /api/videos → array de videos ordenados
+  obtenerVideos: () => api.get('/videos'),
+
+  // POST /api/videos → sube un video a Supabase Storage
+  // data: FormData con campo "video" (archivo) + "titulo" + "orden"
+  subirVideo: (data) => api.post('/videos', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
+  // PUT /api/videos/:id → edita título u orden
+  // data: { titulo: '...', orden: 1 }
+  editarVideo: (id, data) => api.put(`/videos/${id}`, data),
+
+  // DELETE /api/videos/:id → borra de BD y de Supabase Storage
+  eliminarVideo: (id) => api.delete(`/videos/${id}`),
 };
 
 export default backendRESTAdapter;
