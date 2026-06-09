@@ -1,10 +1,13 @@
+// src/context/CarritoContext.jsx
+// Contexto global del carrito de compras
+
 import { createContext, useContext, useState } from 'react'
 
 const CarritoContext = createContext(null)
 
 export function CarritoProvider({ children }) {
   const [items, setItems] = useState([])
-  // Cada item: { id, name, price, image_url, cantidad }
+  // Cada item: { id, name, price, previous_price, image_url, cantidad }
 
   // Agregar producto — si ya existe, suma la cantidad
   function agregar(producto, cantidad = 1) {
@@ -17,17 +20,24 @@ export function CarritoProvider({ children }) {
             : i
         )
       }
+
+      // Obtener primera imagen desde product_images[] o fallback a image_url
+      const imgUrl = producto.product_images?.length > 0
+        ? [...producto.product_images]
+            .sort((a, b) => a.image_order - b.image_order)[0].image_url
+        : (producto.image_url ?? null)
+
       return [...prev, {
-        id:        producto.id,
-        name:      producto.name,
-        price:     producto.price,
-        image_url: producto.image_url ?? null,
+        id:             producto.id,
+        name:           producto.name,
+        price:          Number(producto.price),
+        previous_price: producto.previous_price ? Number(producto.previous_price) : null,
+        image_url:      imgUrl,
         cantidad,
       }]
     })
   }
 
-  // Cambiar cantidad exacta (mínimo 1)
   function setCantidad(id, cantidad) {
     if (cantidad < 1) return
     setItems(prev =>
@@ -35,20 +45,15 @@ export function CarritoProvider({ children }) {
     )
   }
 
-  // Eliminar producto
   function eliminar(id) {
     setItems(prev => prev.filter(i => i.id !== id))
   }
 
-  // Vaciar carrito
   function vaciar() {
     setItems([])
   }
 
-  // Total de ítems (suma de cantidades)
   const totalItems = items.reduce((acc, i) => acc + i.cantidad, 0)
-
-  // Monto total
   const totalMonto = items.reduce((acc, i) => acc + i.price * i.cantidad, 0)
 
   return (

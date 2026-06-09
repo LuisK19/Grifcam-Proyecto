@@ -1,30 +1,27 @@
 // src/pages/Carrito/Carrito.jsx
 // Página del carrito de compras
-// Muestra los productos agregados, permite ajustar cantidades y eliminar
-// Al finalizar genera un mensaje de WhatsApp con la lista completa
-// TODO: conectar el botón "Agregar al carrito" en Catálogo y ProductDetail
-//   con useCarrito().agregar(producto, cantidad)
 
 import { useNavigate } from 'react-router-dom'
 import { Trash2, Plus, Minus, ShoppingBag, MessageCircle, ArrowLeft } from 'lucide-react'
 import { useCarrito } from '../../context/CarritoContext'
 import styles from './Carrito.module.css'
 
-// Número de WhatsApp del negocio
-// TODO: mover a variable de entorno (.env) — VITE_WHATSAPP_NUMBER
 const WHATSAPP_NUMBER = '50660759718'
 
 export default function Carrito() {
   const navigate = useNavigate()
   const { items, setCantidad, eliminar, vaciar, totalItems, totalMonto } = useCarrito()
 
-  // Generar mensaje de WhatsApp con la lista de productos
   function enviarPorWhatsApp() {
     if (items.length === 0) return
 
-    const lineas = items.map(item =>
-      `• ${item.name} × ${item.cantidad} — ₡ ${(item.price * item.cantidad).toLocaleString('es-CR')}`
-    )
+    const lineas = items.map(item => {
+      const precioLinea = (item.price * item.cantidad).toLocaleString('es-CR')
+      const descuento = item.previous_price
+        ? ` _(antes ₡ ${Number(item.previous_price).toLocaleString('es-CR')})_`
+        : ''
+      return `• ${item.name} × ${item.cantidad} — ₡ ${precioLinea}${descuento}`
+    })
 
     const mensaje = [
       '¡Hola! Me gustaría hacer el siguiente pedido:',
@@ -36,8 +33,7 @@ export default function Carrito() {
       '¿Está disponible?',
     ].join('\n')
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
-    window.open(url, '_blank')
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`, '_blank')
   }
 
   // Carrito vacío
@@ -52,10 +48,7 @@ export default function Carrito() {
           <p className={styles.vacioDesc}>
             Explorá el catálogo y agregá productos para armar tu pedido.
           </p>
-          <button
-            className={styles.vacioBtnCatalogo}
-            onClick={() => navigate('/catalogo')}
-          >
+          <button className={styles.vacioBtnCatalogo} onClick={() => navigate('/catalogo')}>
             <ShoppingBag size={16} strokeWidth={2} />
             Ver catálogo
           </button>
@@ -67,7 +60,7 @@ export default function Carrito() {
   return (
     <main className={styles.page}>
 
-      {/* ── ENCABEZADO ── */}
+      {/* === ENCABEZADO === */}
       <div className={styles.header}>
         <div>
           <h1 className={styles.titulo}>Carrito</h1>
@@ -81,7 +74,7 @@ export default function Carrito() {
         </button>
       </div>
 
-      {/* ── LISTA DE PRODUCTOS ── */}
+      {/* === LISTA DE PRODUCTOS === */}
       <div className={styles.lista}>
         {items.map(item => (
           <div key={item.id} className={styles.itemCard}>
@@ -97,9 +90,16 @@ export default function Carrito() {
             {/* Info */}
             <div className={styles.itemInfo}>
               <p className={styles.itemNombre}>{item.name}</p>
-              <p className={styles.itemPrecioUnit}>
-                ₡ {item.price.toLocaleString('es-CR')} c/u
-              </p>
+              <div className={styles.itemPrecios}>
+                {item.previous_price && (
+                  <span className={styles.itemPrecioAnterior}>
+                    ₡ {Number(item.previous_price).toLocaleString('es-CR')}
+                  </span>
+                )}
+                <span className={styles.itemPrecioUnit}>
+                  ₡ {Number(item.price).toLocaleString('es-CR')} c/u
+                </span>
+              </div>
               <p className={styles.itemSubtotal}>
                 Subtotal: <strong>₡ {(item.price * item.cantidad).toLocaleString('es-CR')}</strong>
               </p>
@@ -125,7 +125,6 @@ export default function Carrito() {
                   <Plus size={13} strokeWidth={2.5} />
                 </button>
               </div>
-
               <button
                 className={styles.btnEliminar}
                 onClick={() => eliminar(item.id)}
@@ -139,13 +138,12 @@ export default function Carrito() {
         ))}
       </div>
 
-      {/* ── RESUMEN + BOTÓN WHATSAPP ── */}
+      {/* === RESUMEN === */}
       <div className={styles.resumen}>
         <div className={styles.resumenCard}>
 
           <p className={styles.resumenTitulo}>Resumen del pedido</p>
 
-          {/* Lista resumida */}
           <div className={styles.resumenLista}>
             {items.map(item => (
               <div key={item.id} className={styles.resumenFila}>
@@ -162,7 +160,6 @@ export default function Carrito() {
 
           <div className={styles.resumenDivisor} />
 
-          {/* Total */}
           <div className={styles.resumenTotal}>
             <span className={styles.resumenTotalLabel}>Total estimado</span>
             <span className={styles.resumenTotalMonto}>
@@ -174,17 +171,12 @@ export default function Carrito() {
             El precio final puede variar según disponibilidad y condiciones de entrega acordadas con el negocio.
           </p>
 
-          {/* Botón WhatsApp */}
           <button className={styles.btnWhatsApp} onClick={enviarPorWhatsApp}>
             <MessageCircle size={18} strokeWidth={2} />
             Enviar pedido por WhatsApp
           </button>
 
-          {/* Seguir comprando */}
-          <button
-            className={styles.btnSeguir}
-            onClick={() => navigate('/catalogo')}
-          >
+          <button className={styles.btnSeguir} onClick={() => navigate('/catalogo')}>
             <ArrowLeft size={14} strokeWidth={2} />
             Seguir comprando
           </button>
