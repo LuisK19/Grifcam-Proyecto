@@ -28,6 +28,25 @@
   --color-text-muted:     #7a4f2e;   /* texto secundario — marrón medio                    */
   --color-text-on-primary: #ffffff;  /* texto sobre fondo naranja (botones)                */
 
+  /* Naranjas oscuros — pasan contraste AA (4.5:1) sobre fondos claros */
+  --color-primary-dark:   #B85515;   /* naranja oscuro sobre blanco        */
+  --color-primary-darker: #7A3310;   /* naranja muy oscuro sobre naranja claro */
+  --color-price:          #C45E1A;   /* precio sobre fondo blanco          */
+
+  /* Avatares de categoría — texto oscuro sobre fondo pastel */
+  --color-avatar-orange-bg:    #FEF0E6;
+  --color-avatar-orange-text:  #7A3310;
+  --color-avatar-blue-bg:      #E6F1FB;
+  --color-avatar-blue-text:    #0D3D73;
+  --color-avatar-green-bg:     #E1F5EE;
+  --color-avatar-green-text:   #0A4A38;
+  --color-avatar-yellow-bg:    #FEF5E6;
+  --color-avatar-yellow-text:  #6B4700;
+  --color-avatar-purple-bg:    #EEEDFE;
+  --color-avatar-purple-text:  #2E2880;
+  --color-avatar-red-bg:       #FAECE7;
+  --color-avatar-red-text:     #6B2010;
+
   /* Estados */
   --color-success:        #4caf7d;
   --color-error:          #d94f4f;

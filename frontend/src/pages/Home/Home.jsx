@@ -59,14 +59,20 @@ function SkeletonCarrusel({ tipo = 'producto', cantidad = 2 }) {
   )
 }
 
-// Colores rotativos para los avatares de categoría
+// Colores rotativos para avatares de categoría — usando variables de index.css
+// Los colores se leen del documento raíz para centralizar en index.css
+const ROOT = typeof document !== 'undefined'
+  ? getComputedStyle(document.documentElement)
+  : null
+const v = (name) => ROOT?.getPropertyValue(name).trim() || ''
+
 const CAT_COLORS = [
-  { bg: '#FEF0E6', color: '#EA7D38' },
-  { bg: '#E6F1FB', color: '#185FA5' },
-  { bg: '#E1F5EE', color: '#0F6E56' },
-  { bg: '#FEF5E6', color: '#B87D0F' },
-  { bg: '#EEEDFE', color: '#534AB7' },
-  { bg: '#FAECE7', color: '#993C1D' },
+  { bg: 'var(--color-avatar-orange-bg)', color: 'var(--color-avatar-orange-text)' },
+  { bg: 'var(--color-avatar-blue-bg)',   color: 'var(--color-avatar-blue-text)'   },
+  { bg: 'var(--color-avatar-green-bg)',  color: 'var(--color-avatar-green-text)'  },
+  { bg: 'var(--color-avatar-yellow-bg)', color: 'var(--color-avatar-yellow-text)' },
+  { bg: 'var(--color-avatar-purple-bg)', color: 'var(--color-avatar-purple-text)' },
+  { bg: 'var(--color-avatar-red-bg)',    color: 'var(--color-avatar-red-text)'    },
 ]
 
 function CatAvatar({ name, index }) {
