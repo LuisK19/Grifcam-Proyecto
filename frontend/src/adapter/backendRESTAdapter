@@ -17,8 +17,11 @@ const backendRESTAdapter = {
   eliminarProducto: (id) => api.delete(`/products/${id}`),
 
   // ── Categorías ────────────────────────────────────────────
-  obtenerCategorias:     ()   => api.get('/categories'),
-  obtenerCategoriaPorId: (id) => api.get(`/categories/${id}`),
+  obtenerCategorias:     ()        => api.get('/categories'),
+  obtenerCategoriaPorId: (id)      => api.get(`/categories/${id}`),
+  crearCategoria:        (data)    => api.post('/categories', data),
+  editarCategoria:       (id, data)=> api.put(`/categories/${id}`, data),
+  eliminarCategoria:     (id)      => api.delete(`/categories/${id}`),
 
   // ── Info del negocio ──────────────────────────────────────
   // GET /api/business → devuelve la única fila de business_info

@@ -97,21 +97,13 @@ export default function AdminCategorias() {
     setGuardando(true)
     try {
       if (editandoId) {
-        // Editar — PUT /api/categories/:id
-        await backendRESTAdapter.obtenerCategoriaPorId(editandoId) // verificar que existe
-        // TODO: cuando Keingell agregue PUT /api/categories/:id usar:
-        // await backendRESTAdapter.editarCategoria(editandoId, { name: nombre })
+        await backendRESTAdapter.editarCategoria(editandoId, { name: nombre })
         setCategorias(prev =>
           prev.map(c => c.id === editandoId ? { ...c, name: nombre } : c)
         )
       } else {
-        // Crear — POST /api/categories
-        // TODO: cuando Keingell agregue POST /api/categories usar:
-        // const res = await backendRESTAdapter.crearCategoria({ name: nombre })
-        // setCategorias(prev => [...prev, res.data])
-        setCategorias(prev => [...prev, {
-          id: `temp-${Date.now()}`, name: nombre, cantidad: 0
-        }])
+        const res = await backendRESTAdapter.crearCategoria({ name: nombre })
+        setCategorias(prev => [...prev, { ...res.data, cantidad: 0 }])
       }
       cerrarPanel()
     } catch (err) {
@@ -129,8 +121,7 @@ export default function AdminCategorias() {
 
   async function confirmarEliminar(id) {
     try {
-      // TODO: cuando Keingell agregue DELETE /api/categories/:id usar:
-      // await backendRESTAdapter.eliminarCategoria(id)
+      await backendRESTAdapter.eliminarCategoria(id)
       setCategorias(prev => prev.filter(c => c.id !== id))
     } catch (err) {
       console.error('Error eliminando categoría:', err)
