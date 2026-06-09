@@ -1,3 +1,6 @@
+// src/components/AdminLayout/AdminLayout.jsx
+// Layout del panel administrativo — sidebar desktop + bottom nav mobile
+
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
@@ -8,10 +11,10 @@ import styles from './AdminLayout.module.css'
 import Logo from '../../assets/blanco.png'
 
 const navItems = [
-  { to: '/admin',           end: true,  icon: LayoutDashboard, label: 'Dashboard'  },
-  { to: '/admin/productos', end: false, icon: Package,          label: 'Productos'  },
-  { to: '/admin/categorias',end: false, icon: Tag,              label: 'Categorías' },
-  { to: '/admin/info',      end: false, icon: Info,             label: 'Info'       },
+  { to: '/admin',            end: true,  icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/admin/productos',  end: false, icon: Package,          label: 'Productos'  },
+  { to: '/admin/categorias', end: false, icon: Tag,              label: 'Categorías' },
+  { to: '/admin/info',       end: false, icon: Info,             label: 'Info'       },
 ]
 
 export default function AdminLayout({ children }) {
@@ -19,14 +22,15 @@ export default function AdminLayout({ children }) {
   const [colapsado, setColapsado] = useState(false)
 
   function cerrarSesion() {
-    // limpiar token del AuthContext cuando esté listo
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     navigate('/admin/login')
   }
 
   return (
     <div className={styles.layout}>
 
-      {/* ── SIDEBAR DESKTOP ── */}
+      {/* === SIDEBAR DESKTOP === */}
       <aside className={`${styles.sidebar} ${colapsado ? styles.sidebarColapsado : ''}`}>
 
         <div className={styles.sidebarHeader}>
@@ -73,10 +77,9 @@ export default function AdminLayout({ children }) {
         </button>
       </aside>
 
-      {/* ── ÁREA PRINCIPAL ── */}
+      {/* === ÁREA PRINCIPAL === */}
       <main className={`${styles.main} ${colapsado ? styles.mainExpandido : ''}`}>
 
-        {/* Topbar mobile */}
         <div className={styles.mobileTopbar}>
           <img src={Logo} alt="Grifcam" className={styles.mobileTopbarLogo} />
         </div>
@@ -88,7 +91,7 @@ export default function AdminLayout({ children }) {
         <div className={styles.mobileSpacer} />
       </main>
 
-      {/* ── BOTTOM NAV MOBILE ── */}
+      {/* === BOTTOM NAV MOBILE === */}
       <nav className={styles.bottomNav}>
         {navItems.map(({ to, end, icon: Icon, label }) => (
           <NavLink

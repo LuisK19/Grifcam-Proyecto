@@ -21,10 +21,7 @@ const FORM_INICIAL = {
   is_offer:       false,
   is_new:         true,   // al crear, se marca como nuevo por defecto
   is_featured:    false,
-  featured_badge: '',
 }
-
-const BADGE_OPCIONES = ['', 'Oferta', 'Nuevo', 'Popular']
 
 let nextImgId = 1
 
@@ -61,7 +58,6 @@ export default function AdminProductoForm() {
             is_offer:       producto.is_offer,
             is_new:         producto.is_new,
             is_featured:    producto.is_featured ?? false,
-            featured_badge: producto.featured_badge ?? '',
           })
           // Cargar imágenes existentes desde product_images[]
           const imgs = (producto.product_images ?? [])
@@ -149,7 +145,9 @@ export default function AdminProductoForm() {
       formData.append('is_offer',       form.is_offer)
       formData.append('is_new',         form.is_new)
       formData.append('is_featured',    form.is_featured)
-      if (form.featured_badge) formData.append('featured_badge', form.featured_badge)
+      // Badge automático: Destacado si is_featured, Nuevo si is_new, vacío si ninguno
+      const badge = form.is_featured ? 'Destacado' : form.is_new ? 'Nuevo' : ''
+      formData.append('featured_badge', badge)
 
       // Imágenes nuevas (las que el usuario acaba de seleccionar)
       imagenes
@@ -236,17 +234,6 @@ export default function AdminProductoForm() {
 
                 </div>
 
-                {form.is_featured && (
-                  <div className={styles.campo} style={{ marginTop: '0.75rem' }}>
-                    <label className={styles.label} htmlFor="featured_badge">Badge del destacado</label>
-                    <select id="featured_badge" name="featured_badge"
-                      value={form.featured_badge} onChange={handleChange} className={styles.select}>
-                      {BADGE_OPCIONES.map(b => (
-                        <option key={b} value={b}>{b || 'Sin badge'}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
 

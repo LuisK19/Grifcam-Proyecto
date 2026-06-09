@@ -1,7 +1,7 @@
 // src/pages/Catalogo/Catalogo.jsx
 
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, X, SlidersHorizontal, LayoutGrid, Grid2x2, Grid3x3 } from 'lucide-react'
 import styles from './Catalogo.module.css'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
@@ -142,13 +142,7 @@ function PanelFiltros({
 
 export default function Catalogo() {
   const navigate  = useNavigate()
-  const location  = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
-
-  // === Scroll al tope cuando cambia la ruta ===
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [location.pathname])
 
   // === Estado de datos ===
   const [categorias, setCategorias] = useState([])

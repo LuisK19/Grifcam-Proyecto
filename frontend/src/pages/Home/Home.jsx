@@ -59,6 +59,36 @@ function SkeletonCarrusel({ tipo = 'producto', cantidad = 2 }) {
   )
 }
 
+// Colores rotativos para los avatares de categoría
+const CAT_COLORS = [
+  { bg: '#FEF0E6', color: '#EA7D38' },
+  { bg: '#E6F1FB', color: '#185FA5' },
+  { bg: '#E1F5EE', color: '#0F6E56' },
+  { bg: '#FEF5E6', color: '#B87D0F' },
+  { bg: '#EEEDFE', color: '#534AB7' },
+  { bg: '#FAECE7', color: '#993C1D' },
+]
+
+function CatAvatar({ name, index }) {
+  // Ignora palabras cortas (artículos, preposiciones) para las iniciales
+  const IGNORAR = new Set(['y','e','o','a','de','del','la','el','los','las','un','una','en','con'])
+  const palabras = name.split(' ').filter(w => w.length > 0 && !IGNORAR.has(w.toLowerCase()))
+  const initials = palabras.length >= 2
+    ? (palabras[0][0] + palabras[1][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase()
+  const { bg, color } = CAT_COLORS[index % CAT_COLORS.length]
+  return (
+    <div style={{
+      width: '2.25rem', height: '2.25rem', borderRadius: 'var(--radius-sm)',
+      background: bg, color, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', flexShrink: 0,
+      fontSize: '0.8rem', fontWeight: '600', letterSpacing: '0.03em',
+    }}>
+      {initials}
+    </div>
+  )
+}
+
 // === Carrusel genérico ===
 function Carrusel({ items, renderCard, visibleCount = 1 }) {
   const [pagina, setPagina] = useState(0)
@@ -112,10 +142,12 @@ export default function Home() {
     async function cargarDatos() {
       try {
         const [resProd, resCats] = await Promise.all([
-          backendRESTAdapter.obtenerProductos({ filter: 'is_offer' }),
+          backendRESTAdapter.obtenerProductos(),
           backendRESTAdapter.obtenerCategorias(),
         ])
-        setProductos(resProd.data)
+        // Mostrar productos en oferta O destacados en el carrusel del home
+        const destacados = resProd.data.filter(p => p.is_offer || p.is_featured)
+        setProductos(destacados)
         setCategorias(resCats.data)
       } catch (err) {
         console.error('Error cargando datos del home:', err)
@@ -203,7 +235,7 @@ export default function Home() {
                 className={styles.categoriaCard}
                 onClick={() => navigate(`/catalogo?categoria=${cat.id}`)}
               >
-                <div className={styles.categoriaIcono} />
+                <CatAvatar name={cat.name} index={categorias.indexOf(cat)} />
                 <div>
                   <p className={styles.categoriaNombre}>{cat.name}</p>
                 </div>
