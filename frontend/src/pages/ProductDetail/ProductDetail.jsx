@@ -35,6 +35,7 @@ export default function ProductDetail() {
   const [imgActiva, setImgActiva] = useState(0)
   const [lightbox, setLightbox]   = useState(false)
   const [cantidad, setCantidad]   = useState(1)
+  const [toast, setToast]         = useState(false)
 
   // Cargar producto y relacionados desde la API
   useEffect(() => {
@@ -95,6 +96,8 @@ export default function ProductDetail() {
 
   function agregarAlCarrito() {
     agregar(product, cantidad)
+    setToast(true)
+    setTimeout(() => setToast(false), 2500)
   }
 
   // === ESTADOS DE CARGA / ERROR ===
@@ -317,6 +320,14 @@ export default function ProductDetail() {
           )}
 
           <p className={styles.lightboxContador}>{imgActiva + 1} / {total}</p>
+        </div>
+      )}
+
+      {/* === TOAST CARRITO === */}
+      {toast && (
+        <div className={styles.toast}>
+          <ShoppingCart size={15} strokeWidth={2} />
+          Agregado al carrito
         </div>
       )}
 
