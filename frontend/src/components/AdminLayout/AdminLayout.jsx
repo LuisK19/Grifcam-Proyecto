@@ -8,7 +8,7 @@ import {
   LogOut, PanelRightOpen
 } from 'lucide-react'
 import styles from './AdminLayout.module.css'
-import Logo from '../../assets/blanco.png'
+import Logo from '../../assets/logo-blanco.webp'
 
 const navItems = [
   { to: '/admin',            end: true,  icon: LayoutDashboard, label: 'Dashboard'  },

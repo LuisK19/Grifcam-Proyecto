@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { Home, ShoppingBag, ShoppingCart, Info } from 'lucide-react'
 import styles from './Navbar.module.css'
-import Logo from '../../assets/blanco.png'
+import Logo from '../../assets/logo-blanco.webp'
 
 const navItems = [
   { to: '/',         end: true,  icon: Home,         label: 'Inicio'   },

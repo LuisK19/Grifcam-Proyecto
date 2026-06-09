@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, User } from 'lucide-react'
 import styles from './Login.module.css'
-import Logo from '../../../assets/blanco.png'
+import Logo from '../../../assets/logo-blanco.webp'
 import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
 
 export default function Login() {
