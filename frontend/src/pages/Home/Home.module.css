@@ -142,11 +142,17 @@
   border-radius: 50%;
   background: var(--color-border-strong);
   border: none;
-  /* Área táctil mínima de 44px recomendada por Lighthouse */
-  padding: 0.75rem;
-  margin: -0.75rem;
+  padding: 0;
   cursor: pointer;
   transition: all 0.2s ease;
+  /* Área táctil sin afectar layout */
+  position: relative;
+}
+
+.dot::before {
+  content: '';
+  position: absolute;
+  inset: -0.625rem;
 }
 
 .dotActivo {

@@ -15,7 +15,7 @@
 }
 
 .mobileTopbarLogo {
-  height: 5rem;
+  height: 1.75rem;
   width: auto;
   object-fit: contain;
   mix-blend-mode: screen;
@@ -72,7 +72,7 @@
   }
 
   .logoImg {
-    height: 7rem;
+    height: 2.25rem;
     width: auto;
     object-fit: contain;
     mix-blend-mode: screen;
