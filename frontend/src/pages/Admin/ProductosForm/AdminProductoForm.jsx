@@ -34,6 +34,7 @@ export default function AdminProductoForm() {
   const [form, setForm]           = useState(FORM_INICIAL)
   const [errores, setErrores]     = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [toast, setToast]         = useState('')  // 'exito' | 'error' | ''
   const [cargando, setCargando]   = useState(esEdicion) // solo carga en edición
   const [categorias, setCategorias] = useState([])
   const [imagenes, setImagenes]   = useState([]) // { id, src, file, esExistente }
@@ -160,9 +161,11 @@ export default function AdminProductoForm() {
         await backendRESTAdapter.crearProducto(formData)
       }
 
-      navigate('/admin/productos')
+      setToast('exito')
+      setTimeout(() => navigate('/admin/productos'), 1500)
     } catch (err) {
       console.error('Error guardando producto:', err)
+      setToast('error')
       setErrores({ global: 'Ocurrió un error al guardar. Intentá de nuevo.' })
     } finally {
       setGuardando(false)
@@ -409,6 +412,18 @@ export default function AdminProductoForm() {
             </button>
           )}
           <p className={styles.lightboxContador}>{lightbox + 1} / {imagenes.length}</p>
+        </div>
+      )}
+
+      {/* === TOAST === */}
+      {toast === 'exito' && (
+        <div className={styles.toastExito}>
+          ✓ Producto guardado correctamente
+        </div>
+      )}
+      {toast === 'error' && (
+        <div className={styles.toastError}>
+          ✕ Error al guardar. Revisá los campos.
         </div>
       )}
 

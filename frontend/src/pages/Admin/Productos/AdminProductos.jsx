@@ -117,7 +117,8 @@ export default function AdminProductos() {
   async function confirmarEliminar(id) {
     try {
       await backendRESTAdapter.eliminarProducto(id)
-      setProductos(prev => prev.filter(p => p.id !== id))
+      const res = await backendRESTAdapter.obtenerProductos()
+      setProductos(res.data)
     } catch (err) {
       console.error('Error eliminando producto:', err)
     }

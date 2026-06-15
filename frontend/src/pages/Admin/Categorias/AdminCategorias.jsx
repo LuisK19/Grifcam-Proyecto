@@ -35,6 +35,7 @@ export default function AdminCategorias() {
   const [cargando, setCargando]     = useState(true)
   const [aEliminar, setAEliminar]   = useState(null)
   const [guardando, setGuardando]   = useState(false)
+  const [toast, setToast]           = useState('')
 
   // Panel crear/editar
   const [panelAbierto, setPanelAbierto] = useState(false)
@@ -98,14 +99,15 @@ export default function AdminCategorias() {
     try {
       if (editandoId) {
         await backendRESTAdapter.editarCategoria(editandoId, { name: nombre })
-        setCategorias(prev =>
-          prev.map(c => c.id === editandoId ? { ...c, name: nombre } : c)
-        )
       } else {
-        const res = await backendRESTAdapter.crearCategoria({ name: nombre })
-        setCategorias(prev => [...prev, { ...res.data, cantidad: 0 }])
+        await backendRESTAdapter.crearCategoria({ name: nombre })
       }
+      // Recargar lista desde la API para asegurar datos actualizados
+      const res = await backendRESTAdapter.obtenerCategorias()
+      setCategorias(res.data.map(c => ({ ...c, cantidad: c.cantidad ?? 0 })))
       cerrarPanel()
+      setToast(editandoId ? 'editado' : 'creado')
+      setTimeout(() => setToast(''), 2500)
     } catch (err) {
       console.error('Error guardando categoría:', err)
       setErrorNombre('Error al guardar. Intentá de nuevo.')
@@ -122,9 +124,14 @@ export default function AdminCategorias() {
   async function confirmarEliminar(id) {
     try {
       await backendRESTAdapter.eliminarCategoria(id)
-      setCategorias(prev => prev.filter(c => c.id !== id))
+      const res = await backendRESTAdapter.obtenerCategorias()
+      setCategorias(res.data.map(c => ({ ...c, cantidad: c.cantidad ?? 0 })))
+      setToast('eliminado')
+      setTimeout(() => setToast(''), 2500)
     } catch (err) {
       console.error('Error eliminando categoría:', err)
+      setToast('error')
+      setTimeout(() => setToast(''), 2500)
     }
     setAEliminar(null)
   }
@@ -247,6 +254,12 @@ export default function AdminCategorias() {
         onConfirmar={confirmarEliminar}
         onCancelar={() => setAEliminar(null)}
       />
+
+      {/* === TOAST === */}
+      {toast === 'creado'   && <div className={styles.toastExito}>✓ Categoría creada correctamente</div>}
+      {toast === 'editado'  && <div className={styles.toastExito}>✓ Categoría actualizada correctamente</div>}
+      {toast === 'eliminado'&& <div className={styles.toastExito}>✓ Categoría eliminada</div>}
+      {toast === 'error'    && <div className={styles.toastError}>✕ Error al realizar la operación</div>}
 
     </AdminLayout>
   )
