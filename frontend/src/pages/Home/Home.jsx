@@ -8,9 +8,6 @@ import styles from './Home.module.css'
 import heroBg from '../../assets/bg.png'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
-// TODO: reemplazar con fetch a GET /api/business-info cuando esté disponible
-const DESCRIPCION_CORTA = 'Somos una distribuidora comprometida con la calidad y el servicio al cliente. Llevamos productos seleccionados directamente a tu negocio con los mejores precios del mercado.'
-
 function getPrimeraImagen(product) {
   const imgs = product.product_images
   if (!imgs || imgs.length === 0) return null
@@ -134,6 +131,7 @@ export default function Home() {
   const [isDesktop, setIsDesktop]       = useState(window.innerWidth >= 1024)
   const [productos, setProductos]       = useState([])
   const [categorias, setCategorias]     = useState([])
+  const [negocio, setNegocio]           = useState(null)
   const [cargandoProd, setCargandoProd] = useState(true)
   const [cargandoCats, setCargandoCats] = useState(true)
 
@@ -147,14 +145,16 @@ export default function Home() {
   useEffect(() => {
     async function cargarDatos() {
       try {
-        const [resProd, resCats] = await Promise.all([
+        const [resProd, resCats, resBiz] = await Promise.all([
           backendRESTAdapter.obtenerProductos(),
           backendRESTAdapter.obtenerCategorias(),
+          backendRESTAdapter.obtenerBusiness(),
         ])
         // Mostrar productos en oferta O destacados en el carrusel del home
         const destacados = resProd.data.filter(p => p.is_offer || p.is_featured)
         setProductos(destacados)
         setCategorias(resCats.data)
+        if (resBiz?.data) setNegocio(resBiz.data)
       } catch (err) {
         console.error('Error cargando datos del home:', err)
       } finally {
@@ -260,7 +260,7 @@ export default function Home() {
           <div className={styles.aboutImg} />
           <div className={styles.aboutCuerpo}>
             <p className={styles.aboutTitulo}>Distribuidora Grifcam</p>
-            <p className={styles.aboutTexto}>{DESCRIPCION_CORTA}</p>
+            <p className={styles.aboutTexto}>{negocio?.descripcion_corta ?? 'Somos una distribuidora comprometida con la calidad y el servicio al cliente.'}</p>
           </div>
         </div>
       </section>

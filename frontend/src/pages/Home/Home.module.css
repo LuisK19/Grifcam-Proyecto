@@ -73,8 +73,8 @@
   transition: opacity 0.15s ease;
 }
 
-.heroBtn:hover {
-  opacity: 0.9;
+@media (hover: hover) {
+  .heroBtn:hover { opacity: 0.9; }
 }
 
 /* Sección */
@@ -178,8 +178,8 @@
   height: 7rem;
 }
 
-.productoCard:hover {
-  transform: translateY(-0.125rem);
+@media (hover: hover) {
+  .productoCard:hover { transform: translateY(-0.125rem); }
 }
 
 .productoImg {
@@ -268,8 +268,8 @@
   transition: border-color 0.15s ease;
 }
 
-.categoriaCard:hover {
-  border-color: var(--color-primary);
+@media (hover: hover) {
+  .categoriaCard:hover { border-color: var(--color-primary); }
 }
 
 .categoriaIcono {

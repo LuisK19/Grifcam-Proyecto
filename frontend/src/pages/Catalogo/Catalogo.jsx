@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Search, X, SlidersHorizontal, LayoutGrid, Grid2x2, Grid3x3 } from 'lucide-react'
+import { Search, X, SlidersHorizontal, LayoutGrid, Grid2x2, Grid3x3, ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './Catalogo.module.css'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
+import { useCarrito } from '../../context/CarritoContext'
 
 const FILTROS_ESPECIALES = [
   { key: 'todos',    label: 'Todos'   },
@@ -143,6 +144,31 @@ function PanelFiltros({
 export default function Catalogo() {
   const navigate  = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { agregar } = useCarrito()
+
+  // === Modal agregar al carrito ===
+  const [modalProducto, setModalProducto] = useState(null)
+  const [modalCantidad, setModalCantidad] = useState(1)
+  const [toastVisible, setToastVisible]   = useState(false)
+
+  function abrirModal(e, product) {
+    e.stopPropagation()
+    setModalProducto(product)
+    setModalCantidad(1)
+  }
+
+  function cerrarModal() {
+    setModalProducto(null)
+    setModalCantidad(1)
+  }
+
+  function confirmarAgregar() {
+    if (!modalProducto) return
+    agregar(modalProducto, modalCantidad)
+    cerrarModal()
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 2500)
+  }
 
   // === Estado de datos ===
   const [categorias, setCategorias] = useState([])
@@ -389,13 +415,37 @@ export default function Catalogo() {
                     </div>
                     <div className={styles.cardInfo}>
                       <p className={styles.cardName}>{product.name}</p>
-                      <p className={styles.cardPrice}>₡ {Number(product.price).toLocaleString('es-CR')}</p>
-                      <button
-                        className={styles.cardBtn}
-                        onClick={e => { e.stopPropagation(); navigate(`/producto/${product.id}`) }}
-                      >
-                        Ver más
-                      </button>
+                      <div className={styles.cardPriceRow}>
+                        {product.previous_price && (
+                          <span className={styles.cardPriceAnterior}>
+                            ₡ {Number(product.previous_price).toLocaleString('es-CR')}
+                          </span>
+                        )}
+                        <span className={styles.cardPrice}>
+                          ₡ {Number(product.price).toLocaleString('es-CR')}
+                        </span>
+                        {product.previous_price && (
+                          <span className={styles.cardDescuento}>
+                            -{Math.round((1 - product.price / product.previous_price) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.cardBtns}>
+                        <button
+                          className={styles.cardBtn}
+                          onClick={e => { e.stopPropagation(); navigate(`/producto/${product.id}`) }}
+                        >
+                          Ver más
+                        </button>
+                        <button
+                          className={styles.cardBtnCarrito}
+                          onClick={e => abrirModal(e, product)}
+                          aria-label="Agregar al carrito"
+                          title="Agregar al carrito"
+                        >
+                          <ShoppingCart size={14} strokeWidth={2} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -437,6 +487,131 @@ export default function Catalogo() {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* === MODAL AGREGAR AL CARRITO === */}
+      {modalProducto && (() => {
+        const imagenes = (modalProducto.product_images ?? [])
+          .sort((a, b) => a.image_order - b.image_order)
+        const imgActiva = modalProducto._imgActiva ?? 0
+        const total = imagenes.length
+        const subtotal = Number(modalProducto.price) * modalCantidad
+        const descuento = modalProducto.previous_price
+          ? Math.round((1 - modalProducto.price / modalProducto.previous_price) * 100)
+          : null
+        return (
+          <div className={styles.modalOverlay} onClick={cerrarModal}>
+            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+
+              {/* Botón cerrar */}
+              <button className={styles.modalCerrar} onClick={cerrarModal} aria-label="Cerrar">
+                <X size={16} strokeWidth={2} />
+              </button>
+
+              {/* Layout horizontal: imagen izq + info der */}
+              <div className={styles.modalLayout}>
+
+                {/* Carrusel imagen */}
+                <div className={styles.modalGaleria}>
+                  <div className={styles.modalImgWrap}>
+                    {imagenes.length > 0 ? (
+                      <img
+                        src={imagenes[imgActiva]?.image_url}
+                        alt={modalProducto.name}
+                        className={styles.modalImg}
+                      />
+                    ) : (
+                      <div className={styles.modalImgPlaceholder} />
+                    )}
+                  </div>
+                  {total > 1 && (
+                    <div className={styles.modalCarruselBtns}>
+                      <button
+                        className={styles.modalCarruselBtn}
+                        onClick={() => setModalProducto(p => ({ ...p, _imgActiva: (imgActiva - 1 + total) % total }))}
+                        aria-label="Imagen anterior"
+                      >
+                        <ChevronLeft size={16} strokeWidth={2.5} />
+                      </button>
+                      <span className={styles.modalContador}>{imgActiva + 1}/{total}</span>
+                      <button
+                        className={styles.modalCarruselBtn}
+                        onClick={() => setModalProducto(p => ({ ...p, _imgActiva: (imgActiva + 1) % total }))}
+                        aria-label="Imagen siguiente"
+                      >
+                        <ChevronRight size={16} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info derecha */}
+                <div className={styles.modalInfo}>
+                  <p className={styles.modalNombre}>{modalProducto.name}</p>
+
+                  <div className={styles.modalPrecios}>
+                    {modalProducto.previous_price && (
+                      <span className={styles.modalPrecioAnterior}>
+                        ₡ {Number(modalProducto.previous_price).toLocaleString('es-CR')}
+                      </span>
+                    )}
+                    <span className={styles.modalPrecio}>
+                      ₡ {Number(modalProducto.price).toLocaleString('es-CR')}
+                    </span>
+                    {descuento && (
+                      <span className={styles.modalDescuento}>-{descuento}%</span>
+                    )}
+                  </div>
+
+                  <p className={styles.modalPrecioUnit}>por unidad</p>
+
+                  <div className={styles.modalCantidad}>
+                    <button
+                      className={styles.modalCantBtn}
+                      onClick={() => setModalCantidad(c => Math.max(1, c - 1))}
+                      disabled={modalCantidad <= 1}
+                    >
+                      <Minus size={13} strokeWidth={2.5} />
+                    </button>
+                    <span className={styles.modalCantNum}>{modalCantidad}</span>
+                    <button
+                      className={styles.modalCantBtn}
+                      onClick={() => setModalCantidad(c => c + 1)}
+                    >
+                      <Plus size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+
+                  <div className={styles.modalSubtotal}>
+                    <span className={styles.modalSubtotalLabel}>Total</span>
+                    <span className={styles.modalSubtotalMonto}>
+                      ₡ {subtotal.toLocaleString('es-CR')}
+                    </span>
+                  </div>
+
+                  <div className={styles.modalBtns}>
+                    <button className={styles.modalBtnCancelar} onClick={cerrarModal}>
+                      Cancelar
+                    </button>
+                    <button className={styles.modalBtnAgregar} onClick={confirmarAgregar}>
+                      <ShoppingCart size={14} strokeWidth={2} />
+                      Agregar
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* === TOAST === */}
+      {toastVisible && (
+        <div className={styles.toast}>
+          <ShoppingCart size={15} strokeWidth={2} />
+          Agregado al carrito
         </div>
       )}
 
