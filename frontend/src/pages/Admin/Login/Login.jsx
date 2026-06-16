@@ -1,7 +1,3 @@
-// src/pages/Login/Login.jsx
-// Pantalla de inicio de sesión del administrador
-// Accesible únicamente por URL directa: /admin/login
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Lock, User } from 'lucide-react'

@@ -115,7 +115,7 @@ function PanelFiltros({
             onChange={e => setPrecioMin(Math.min(Number(e.target.value), precioMax))}
           />
         </div>
-        <span className={styles.precioSeparador}>—</span>
+        <span className={styles.precioSeparador}>-</span>
         <div className={styles.precioInputWrap}>
           <span className={styles.precioMoneda}>₡</span>
           <input
@@ -326,7 +326,7 @@ export default function Catalogo() {
           ))}
         </div>
 
-        {/* Selector de columnas — solo desktop */}
+        {/* Selector de columnas - solo desktop */}
         <div className={styles.columnasSelector}>
           <button
             className={`${styles.columnaBtn} ${columnas === 3 ? styles.columnaBtnActivo : ''}`}

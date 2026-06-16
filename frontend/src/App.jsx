@@ -1,7 +1,7 @@
-// src/App.jsx
-
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { useDarkMode } from './hooks/useDarkMode'
+import { Moon, Sun } from 'lucide-react'
 
 import Home            from './pages/Home/Home'
 import Navbar          from './components/Navbar/Navbar'
@@ -32,6 +32,51 @@ function RutaAdmin({ children }) {
   return children
 }
 
+function DarkModeToggle() {
+  const [oscuro, setOscuro] = useDarkMode()
+  const location = useLocation()
+  const esAdmin = location.pathname.startsWith('/admin')
+  
+  // En admin forzar modo claro
+  useEffect(() => {
+    if (esAdmin) {
+      document.documentElement.setAttribute('data-theme', 'light')
+    }
+  }, [esAdmin])
+
+  if (esAdmin) return null
+
+  return (
+    <button
+      onClick={() => setOscuro(o => !o)}
+      aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      className="darkModeFloatingBtn"
+      style={{
+        position: 'fixed',
+        bottom: '5.5rem',
+        right: '1rem',
+        zIndex: 150,
+        width: '2.75rem',
+        height: '2.75rem',
+        borderRadius: '50%',
+        border: '0.0625rem solid var(--color-border)',
+        background: 'var(--color-surface)',
+        color: 'var(--color-text)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        boxShadow: 'var(--shadow)',
+      }}
+    >
+      {oscuro
+        ? <Sun  size={18} strokeWidth={1.8} />
+        : <Moon size={18} strokeWidth={1.8} />
+      }
+    </button>
+  )
+}
+
 function AppContent() {
   const location = useLocation()
   const esAdmin = location.pathname.startsWith('/admin')
@@ -39,6 +84,7 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
+      <DarkModeToggle />
       {!esAdmin && <Navbar />}
       <Routes>
         {/* Rutas públicas */}
@@ -48,10 +94,10 @@ function AppContent() {
         <Route path="/carrito"     element={<Carrito />} />
         <Route path="/info"        element={<Info />} />
 
-        {/* Login — público */}
+        {/* Login - público */}
         <Route path="/admin/login" element={<Login />} />
 
-        {/* Rutas admin — protegidas */}
+        {/* Rutas admin - protegidas */}
         <Route path="/admin"                      element={<RutaAdmin><AdminDashboard /></RutaAdmin>} />
         <Route path="/admin/productos"            element={<RutaAdmin><AdminProductos /></RutaAdmin>} />
         <Route path="/admin/productos/nuevo"      element={<RutaAdmin><AdminProductoForm /></RutaAdmin>} />
