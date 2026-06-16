@@ -1,11 +1,9 @@
-// src/pages/Home/Home.jsx
-// Landing page con skeleton loading para las secciones que dependen de la API
-
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './Home.module.css'
 import heroBg from '../../assets/bg.png'
+import heroBgDark from '../../assets/bg-dark.webp'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
 function getPrimeraImagen(product) {
@@ -56,13 +54,7 @@ function SkeletonCarrusel({ tipo = 'producto', cantidad = 2 }) {
   )
 }
 
-// Colores rotativos para avatares de categoría — usando variables de index.css
-// Los colores se leen del documento raíz para centralizar en index.css
-const ROOT = typeof document !== 'undefined'
-  ? getComputedStyle(document.documentElement)
-  : null
-const v = (name) => ROOT?.getPropertyValue(name).trim() || ''
-
+// Colores rotativos para avatares de categoría
 const CAT_COLORS = [
   { bg: 'var(--color-avatar-orange-bg)', color: 'var(--color-avatar-orange-text)' },
   { bg: 'var(--color-avatar-blue-bg)',   color: 'var(--color-avatar-blue-text)'   },
@@ -92,7 +84,7 @@ function CatAvatar({ name, index }) {
   )
 }
 
-// === Carrusel genérico ===
+// === Carrusel ===
 function Carrusel({ items, renderCard, visibleCount = 1 }) {
   const [pagina, setPagina] = useState(0)
   const totalPaginas = Math.max(1, Math.ceil(items.length / visibleCount))
@@ -128,10 +120,22 @@ function Carrusel({ items, renderCard, visibleCount = 1 }) {
 export default function Home() {
   const navigate = useNavigate()
 
-  const [isDesktop, setIsDesktop]       = useState(window.innerWidth >= 1024)
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024)
+  const [oscuro, setOscuro] = useState(
+    () => document.documentElement.getAttribute('data-theme') === 'dark'
+  )
+
+  // Escuchar cambios en data-theme para actualizar el fondo del hero
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setOscuro(document.documentElement.getAttribute('data-theme') === 'dark')
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
+  const [negocio, setNegocio]           = useState(null)
   const [productos, setProductos]       = useState([])
   const [categorias, setCategorias]     = useState([])
-  const [negocio, setNegocio]           = useState(null)
   const [cargandoProd, setCargandoProd] = useState(true)
   const [cargandoCats, setCargandoCats] = useState(true)
 
@@ -156,7 +160,6 @@ export default function Home() {
         setCategorias(resCats.data)
         if (resBiz?.data) setNegocio(resBiz.data)
       } catch (err) {
-        console.error('Error cargando datos del home:', err)
       } finally {
         setCargandoProd(false)
         setCargandoCats(false)
@@ -172,12 +175,12 @@ export default function Home() {
 
       {/* === HERO === */}
       <section className={styles.hero}>
-        <div className={styles.heroBg} style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className={styles.heroBg} style={{ backgroundImage: `url(${oscuro ? heroBgDark : heroBg})` }} />
         <div className={styles.heroContenido}>
           <span className={styles.heroEyebrow}>Distribuidora Grifcam</span>
           <h1 className={styles.heroTitulo}>Bienvenidos a<br />Grifcam</h1>
           <p className={styles.heroSub}>
-            Productos de calidad para tu negocio, directo al mejor precio.
+            {negocio?.descripcion_corta ?? 'Productos de calidad para tu negocio, directo al mejor precio.'}
           </p>
           <button className={styles.heroBtn} onClick={() => navigate('/catalogo')}>
             Ver catálogo
@@ -226,7 +229,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* === CARRUSEL CATEGORÍAS — skeleton mientras carga === */}
+      {/* === CARRUSEL CATEGORÍAS - skeleton mientras carga === */}
       <section className={styles.seccion}>
         <p className={styles.seccionTitulo}>Categorías</p>
         {cargandoCats ? (
@@ -253,17 +256,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* === SOBRE NOSOTROS === */}
-      <section className={styles.seccion}>
-        <p className={styles.seccionTitulo}>Sobre nosotros</p>
-        <div className={styles.aboutCard}>
-          <div className={styles.aboutImg} />
-          <div className={styles.aboutCuerpo}>
-            <p className={styles.aboutTitulo}>Distribuidora Grifcam</p>
-            <p className={styles.aboutTexto}>{negocio?.descripcion_corta ?? 'Somos una distribuidora comprometida con la calidad y el servicio al cliente.'}</p>
-          </div>
-        </div>
-      </section>
 
     </main>
   )
