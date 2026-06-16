@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import { Home, ShoppingBag, ShoppingCart, Info } from 'lucide-react'
 import styles from './Navbar.module.css'
 import { useCarrito } from '../../context/CarritoContext'
@@ -18,7 +18,7 @@ export default function Navbar() {
     <>
       {/* == MOBILE TOPBAR - solo logo, visible en mobile/tablet == */}
       <header className={styles.mobileTopbar}>
-        <img src={Logo} alt="Grifcam" className={styles.mobileTopbarLogo} />
+        <Link to="/"><img src={Logo} alt="Grifcam" className={styles.mobileTopbarLogo} /></Link>
 
       </header>
 
@@ -26,7 +26,7 @@ export default function Navbar() {
       <header className={styles.desktopNav}>
         <div className={styles.desktopInner}>
           <div className={styles.logoSlot}>
-            <img src={Logo} alt="Grifcam" className={styles.logoImg} />
+            <Link to="/"><img src={Logo} alt="Grifcam" className={styles.logoImg} /></Link>
           </div>
           <nav className={styles.desktopLinks}>
             {navItems.map(({ to, end, label }) => (
