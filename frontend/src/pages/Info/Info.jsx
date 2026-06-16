@@ -108,7 +108,6 @@ export default function Info() {
 
       {/* === HEADER === */}
       <div className={styles.header}>
-        <div className={styles.headerImgPlaceholder} />
         <div className={styles.headerTexto}>
           <h1 className={styles.headerTitulo}>Información</h1>
           {cargando
