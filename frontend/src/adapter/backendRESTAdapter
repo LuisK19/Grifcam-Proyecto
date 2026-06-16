@@ -4,11 +4,13 @@ const backendRESTAdapter = {
 
   // == Autenticación =========================================
   loginUsuario: (data) => api.post('/auth/login', data),
-
+  verificarCodigoRecuperacion: (data) => api.post('/auth/verify-recovery-code', data),
+  resetearContrasena: (data) => api.post('/auth/reset-password', data),
+  
   // == Productos =============================================
-  obtenerProductos:      (params) => api.get('/products', { params }),
-  obtenerProductoPorId:  (id)     => api.get(`/products/${id}`),
-  crearProducto:  (data) => api.post('/products', data, {
+  obtenerProductos: (params) => api.get('/products', { params }),
+  obtenerProductoPorId: (id) => api.get(`/products/${id}`),
+  crearProducto: (data) => api.post('/products', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   editarProducto: (id, data) => api.put(`/products/${id}`, data, {
@@ -17,11 +19,11 @@ const backendRESTAdapter = {
   eliminarProducto: (id) => api.delete(`/products/${id}`),
 
   // == Categorías ============================================
-  obtenerCategorias:     ()        => api.get('/categories'),
-  obtenerCategoriaPorId: (id)      => api.get(`/categories/${id}`),
-  crearCategoria:        (data)    => api.post('/categories', data),
-  editarCategoria:       (id, data)=> api.put(`/categories/${id}`, data),
-  eliminarCategoria:     (id)      => api.delete(`/categories/${id}`),
+  obtenerCategorias: () => api.get('/categories'),
+  obtenerCategoriaPorId: (id) => api.get(`/categories/${id}`),
+  crearCategoria: (data) => api.post('/categories', data),
+  editarCategoria: (id, data) => api.put(`/categories/${id}`, data),
+  eliminarCategoria: (id) => api.delete(`/categories/${id}`),
 
   // == Info del negocio ======================================
   // GET /api/business → devuelve la única fila de business_info

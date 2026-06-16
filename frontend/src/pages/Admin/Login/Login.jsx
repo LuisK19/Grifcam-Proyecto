@@ -4,6 +4,7 @@ import { Eye, EyeOff, Lock, User } from 'lucide-react'
 import styles from './Login.module.css'
 import Logo from '../../../assets/logo-blanco.webp'
 import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
+import ModalRecuperacion from '../../../components/ModalRecuperacion/ModalRecuperacion'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -13,6 +14,7 @@ export default function Login() {
   const [verPass, setVerPass]   = useState(false)
   const [cargando, setCargando] = useState(false)
   const [error, setError]       = useState('')
+  const [modalRecup, setModalRecup] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -80,7 +82,7 @@ export default function Login() {
               <button
                 type="button"
                 className={styles.olvideLinkBtn}
-                onClick={() => alert('Contactá al administrador del sistema.')}
+                onClick={() => setModalRecup(true)}
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -126,6 +128,9 @@ export default function Login() {
 
         </form>
       </div>
+      {modalRecup && (
+        <ModalRecuperacion onCerrar={() => setModalRecup(false)} />
+      )}
     </div>
   )
 }

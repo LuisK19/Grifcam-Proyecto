@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './Home.module.css'
 import heroBg from '../../assets/bg.png'
-import heroBgDark from '../../assets/bg-dark.webp'
+import heroBgDark from '../../assets/bg-dark.png'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 
 function getPrimeraImagen(product) {
