@@ -1,5 +1,3 @@
-// src/pages/Catalogo/Catalogo.jsx
-
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, X, SlidersHorizontal, LayoutGrid, Grid2x2, Grid3x3, ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -183,17 +181,17 @@ export default function Catalogo() {
     searchParams.get('categoria') ? [searchParams.get('categoria')] : []
   )
   const [precioMin, setPrecioMin]         = useState(0)
-  const [precioMax, setPrecioMax]         = useState(999999)
-  const [precioMaxReal, setPrecioMaxReal] = useState(999999)
+  const [precioMax, setPrecioMax]         = useState(0)
+  const [precioMaxReal, setPrecioMaxReal] = useState(0)
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     cats: searchParams.get('categoria') ? [searchParams.get('categoria')] : [],
     min: 0,
-    max: 999999,
+    max: 0,
   })
 
   // === UI ===
   const [drawerAbierto, setDrawerAbierto] = useState(false)
-  // columnas: 3 | 4 | 5  (solo afecta desktop — en mobile siempre 2)
+  // columnas: 3 | 4 | 5  (solo afecta desktop - en mobile siempre 2)
   const [columnas, setColumnas] = useState(4)
 
   // === Carga de datos ===
@@ -215,7 +213,6 @@ export default function Catalogo() {
         setPrecioMax(maxRedondeado)
         setFiltrosAplicados(prev => ({ ...prev, max: maxRedondeado }))
       } catch (err) {
-        console.error('Error cargando catálogo:', err)
         setError('No se pudo cargar el catálogo. Intentá de nuevo.')
       } finally {
         setCargando(false)
