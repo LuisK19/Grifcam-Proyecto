@@ -1,6 +1,3 @@
-// src/pages/Admin/Productos/AdminProductos.jsx
-// Lista de productos del panel administrativo — conectada a la API
-
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -56,7 +53,6 @@ export default function AdminProductos() {
         setProductos(resProd.data)
         setCategorias(resCats.data)
       } catch (err) {
-        console.error('Error cargando productos:', err)
         setError('No se pudieron cargar los productos.')
       } finally {
         setCargando(false)
@@ -67,7 +63,7 @@ export default function AdminProductos() {
 
   // Nombre de categoría por ID
   function nombreCategoria(id) {
-    return categorias.find(c => c.id === id)?.name ?? '—'
+    return categorias.find(c => c.id === id)?.name ?? '-'
   }
 
   const productosFiltrados = useMemo(() => {
@@ -83,7 +79,7 @@ export default function AdminProductos() {
     return res
   }, [productos, filtro, catFiltro, busqueda])
 
-  // Toggle de flag — actualiza local + llama API
+  // Toggle de flag - actualiza local + llama API
   async function toggleFlag(id, flag) {
     const producto = productos.find(p => p.id === id)
     if (!producto) return
@@ -105,7 +101,6 @@ export default function AdminProductos() {
       formData.append('is_featured', flag === 'is_featured' ? nuevoValor : (producto.is_featured ?? false))
       await backendRESTAdapter.editarProducto(id, formData)
     } catch (err) {
-      console.error('Error toggleando flag:', err)
       // Revertir si falla
       setProductos(prev =>
         prev.map(p => p.id === id ? { ...p, [flag]: !nuevoValor } : p)
@@ -120,7 +115,6 @@ export default function AdminProductos() {
       const res = await backendRESTAdapter.obtenerProductos()
       setProductos(res.data)
     } catch (err) {
-      console.error('Error eliminando producto:', err)
     }
     setAEliminar(null)
   }
