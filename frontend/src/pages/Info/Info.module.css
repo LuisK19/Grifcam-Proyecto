@@ -1,5 +1,3 @@
-/* PÁGINA */
-
 .page {
   background-color: var(--color-bg);
   padding-top: 3rem;
@@ -461,4 +459,28 @@
   );
   background-size: 80rem 100%;
   animation: shimmer 1.6s infinite linear;
+}
+/* === MODO OSCURO === */
+[data-theme="dark"] .horarioHoy {
+  background: rgba(200, 104, 32, 0.2);
+  border-left: 0.2rem solid var(--color-primary);
+}
+
+[data-theme="dark"] .horarioHoy .horarioDia,
+[data-theme="dark"] .horarioHoy .horarioHoras {
+  color: var(--color-primary-dark);
+  font-weight: 500;
+}
+
+[data-theme="dark"] .horarioFila {
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .horarioFila:nth-child(even) {
+  background: rgba(255,255,255,0.03);
+}
+
+[data-theme="dark"] .hoyBadge {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }

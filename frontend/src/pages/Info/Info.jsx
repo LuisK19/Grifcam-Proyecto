@@ -1,6 +1,3 @@
-// src/pages/Info/Info.jsx
-// Página de información del negocio — conectada a la API
-
 import { useState, useEffect } from 'react'
 import {
   Phone, Mail, MapPin, Clock, ExternalLink,
@@ -36,7 +33,7 @@ const HORARIO_FALLBACK = [
 const DIAS_SEMANA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 const diaHoy = DIAS_SEMANA[new Date().getDay()]
 
-// Formatea "60759718" → "6075 9718"
+// Formatea "60759718" a "6075 9718"
 function formatearTelefono(tel) {
   if (!tel) return ''
   const limpio = tel.replace(/\D/g, '')
@@ -180,7 +177,7 @@ export default function Info() {
                   </div>
                   <div className={styles.redTexto}>
                     <p className={styles.redNombre}>Instagram</p>
-                    <p className={styles.redHandle}>@distribuidoragrifcam</p>
+                    <p className={styles.redHandle}>@{info.instagram?.split('/').filter(Boolean).pop()}</p>
                   </div>
                   <ExternalLink size={13} strokeWidth={2} className={styles.redFlecha} />
                 </a>
@@ -250,7 +247,7 @@ export default function Info() {
           )}
         </div>
 
-        {/* === VIDEOS — ancho completo === */}
+        {/* === VIDEOS - ancho completo === */}
         {videos.length > 0 && (
           <div className={`${styles.card} ${styles.fullCol}`}>
             <p className={styles.cardTitulo}>Videos</p>
