@@ -1,39 +1,45 @@
-// src/pages/Carrito/Carrito.jsx
-// Página del carrito de compras
-
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 import { Trash2, Plus, Minus, ShoppingBag, MessageCircle, ArrowLeft } from 'lucide-react'
 import { useCarrito } from '../../context/CarritoContext'
 import styles from './Carrito.module.css'
 
-const WHATSAPP_NUMBER = '50660759718'
+const WHATSAPP_FALLBACK = '50660759718'
 
 export default function Carrito() {
   const navigate = useNavigate()
   const { items, setCantidad, eliminar, vaciar, totalItems, totalMonto } = useCarrito()
+  const [whatsapp, setWhatsapp] = useState(WHATSAPP_FALLBACK)
+
+  useEffect(() => {
+    backendRESTAdapter.obtenerBusiness()
+      .then(res => { if (res?.data?.whatsapp) setWhatsapp(res.data.whatsapp) })
+      .catch(() => {})
+  }, [])
 
   function enviarPorWhatsApp() {
     if (items.length === 0) return
 
     const lineas = items.map(item => {
-      const precioLinea = (item.price * item.cantidad).toLocaleString('es-CR')
-      const descuento = item.previous_price
+      const subtotal = (item.price * item.cantidad).toLocaleString('es-CR')
+      const anterior = item.previous_price
         ? ` _(antes ₡ ${Number(item.previous_price).toLocaleString('es-CR')})_`
         : ''
-      return `• ${item.name} × ${item.cantidad} — ₡ ${precioLinea}${descuento}`
+      return `• ${item.name} × ${item.cantidad} - ₡ ${subtotal}${anterior}`
     })
 
     const mensaje = [
-      '¡Hola! Me gustaría hacer el siguiente pedido:',
+      '¡Hola! Me gustaría realizar el siguiente pedido:',
       '',
       ...lineas,
       '',
-      `*Total: ₡ ${totalMonto.toLocaleString('es-CR')}*`,
+      `*Total estimado: ₡ ${totalMonto.toLocaleString('es-CR')}*`,
       '',
-      '¿Está disponible?',
+      '¿Podría confirmar disponibilidad y coordinar la entrega? Gracias.',
     ].join('\n')
 
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`, '_blank')
+    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensaje)}`, '_blank')
   }
 
   // Carrito vacío
