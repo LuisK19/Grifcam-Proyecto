@@ -237,13 +237,7 @@ export default function Info() {
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
-          {info.maps_link && (
-            <a href={info.maps_link} target="_blank" rel="noopener noreferrer" className={styles.mapaBtn}>
-              <MapPin size={14} strokeWidth={2} />
-              Abrir en Google Maps
-              <ExternalLink size={12} strokeWidth={2} />
-            </a>
-          )}
+
         </div>
 
         {/* === VIDEOS - ancho completo === */}
