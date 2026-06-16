@@ -83,7 +83,6 @@ export default function AdminInfo() {
         if (resPol.status === 'fulfilled') setPoliticas(resPol.value.data)
         if (resVid.status === 'fulfilled') setVideos(resVid.value.data)
       } catch (err) {
-        console.error('Error cargando AdminInfo:', err)
       } finally {
         setCargando(false)
       }
@@ -235,7 +234,6 @@ export default function AdminInfo() {
 
       setGuardado(true)
     } catch (err) {
-      console.error('Error guardando AdminInfo:', err)
       setErrores({ global: 'Ocurrió un error al guardar. Intentá de nuevo.' })
     } finally {
       setGuardando(false)

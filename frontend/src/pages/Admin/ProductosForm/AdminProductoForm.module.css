@@ -7,7 +7,7 @@
   max-width: 56rem;
 }
 
-/* ── ENCABEZADO ── */
+/* == ENCABEZADO == */
 .encabezado {
   display: flex;
   flex-direction: column;
@@ -37,7 +37,7 @@
   color: var(--color-text);
 }
 
-/* ── FORM ── */
+/* == FORM == */
 .form {
   display: flex;
   flex-direction: column;
@@ -67,7 +67,7 @@
   }
 }
 
-/* ── SECCIÓN BASE ── */
+/* == SECCIÓN BASE == */
 .seccion {
   background: var(--color-surface);
   border: 0.0625rem solid var(--color-border);
@@ -89,7 +89,7 @@
   gap: 0.5rem;
 }
 
-/* ── FLAGS ── */
+/* == FLAGS == */
 .flagsGrid {
   display: flex;
   flex-direction: column;
@@ -138,7 +138,7 @@
   margin-top: 0.1rem;
 }
 
-/* ── CAMPOS ── */
+/* == CAMPOS == */
 .campo {
   display: flex;
   flex-direction: column;
@@ -240,7 +240,7 @@
   min-width: 0;
 }
 
-/* ── SECCIÓN IMÁGENES ── */
+/* == SECCIÓN IMÁGENES == */
 .imagenesHeader {
   display: flex;
   align-items: center;
@@ -402,7 +402,7 @@
 .imagenTexto    { font-size: 0.875rem; font-weight: 500; color: var(--color-text-muted); }
 .imagenSubtexto { font-size: 0.75rem; color: var(--color-text-muted); opacity: 0.7; }
 
-/* ── ERROR GLOBAL ── */
+/* == ERROR GLOBAL == */
 .errorGlobal {
   font-size: 0.875rem;
   color: var(--color-error);
@@ -411,7 +411,7 @@
   padding: 0.625rem 0.875rem;
 }
 
-/* ── BOTONES FINALES ── */
+/* == BOTONES FINALES == */
 .formBtns {
   display: flex;
   gap: 0.625rem;
@@ -459,7 +459,7 @@
 
 .spinner { animation: spin 0.8s linear infinite; }
 
-/* ── LIGHTBOX ── */
+/* == LIGHTBOX == */
 .lightboxOverlay {
   position: fixed;
   inset: 0;

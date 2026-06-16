@@ -1,7 +1,3 @@
-// src/pages/Admin/ProductosForm/AdminProductoForm.jsx
-// Formulario para crear y editar productos — conectado a la API
-// Al crear: is_new se activa automáticamente y se desactiva a los 7 días (configurado en la BD)
-
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -11,6 +7,8 @@ import {
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
 import styles from './AdminProductoForm.module.css'
 import backendRESTAdapter from '../../../adapter/backendRESTAdapter'
+
+const MAX_IMAGENES = 3
 
 const FORM_INICIAL = {
   name:           '',
@@ -72,7 +70,6 @@ export default function AdminProductoForm() {
           setImagenes(imgs)
         }
       } catch (err) {
-        console.error('Error cargando formulario:', err)
       } finally {
         setCargando(false)
       }
@@ -89,7 +86,22 @@ export default function AdminProductoForm() {
   function handleAgregarImagenes(e) {
     const archivos = Array.from(e.target.files ?? [])
     if (!archivos.length) return
-    const nuevas = archivos.map(file => ({
+
+    const espaciosDisponibles = MAX_IMAGENES - imagenes.length
+    if (espaciosDisponibles <= 0) {
+      setErrores(prev => ({ ...prev, imagenes: `Solo se permiten ${MAX_IMAGENES} imágenes por producto. Eliminá una para agregar otra.` }))
+      if (inputFileRef.current) inputFileRef.current.value = ''
+      return
+    }
+
+    const archivosFiltrados = archivos.slice(0, espaciosDisponibles)
+    if (archivos.length > espaciosDisponibles) {
+      setErrores(prev => ({ ...prev, imagenes: `Solo se agregaron ${archivosFiltrados.length} imagen${archivosFiltrados.length !== 1 ? 'es' : ''}. El límite es ${MAX_IMAGENES} por producto.` }))
+    } else {
+      setErrores(prev => ({ ...prev, imagenes: '' }))
+    }
+
+    const nuevas = archivosFiltrados.map(file => ({
       id:          nextImgId++,
       src:         URL.createObjectURL(file),
       file,
@@ -164,7 +176,6 @@ export default function AdminProductoForm() {
       setToast('exito')
       setTimeout(() => navigate('/admin/productos'), 1500)
     } catch (err) {
-      console.error('Error guardando producto:', err)
       setToast('error')
       setErrores({ global: 'Ocurrió un error al guardar. Intentá de nuevo.' })
     } finally {
@@ -202,7 +213,7 @@ export default function AdminProductoForm() {
           {/* GRID SUPERIOR */}
           <div className={styles.formGrid}>
 
-            {/* Columna izquierda — flags */}
+            {/* Columna izquierda - flags */}
             <div className={styles.colIzq}>
               <div className={styles.seccion}>
                 <p className={styles.seccionTitulo}>Etiquetas</p>
@@ -240,7 +251,7 @@ export default function AdminProductoForm() {
               </div>
             </div>
 
-            {/* Columna derecha — info */}
+            {/* Columna derecha - info */}
             <div className={styles.colDer}>
               <div className={styles.seccion}>
                 <p className={styles.seccionTitulo}>Información del producto</p>
@@ -325,11 +336,13 @@ export default function AdminProductoForm() {
                   {imagenes.length} imagen{imagenes.length !== 1 ? 'es' : ''}
                 </span>
               </p>
-              <button type="button" className={styles.btnAgregarImg}
-                onClick={() => inputFileRef.current?.click()}>
-                <ImagePlus size={15} strokeWidth={2} />
-                Agregar imágenes
-              </button>
+              {imagenes.length < MAX_IMAGENES && (
+                <button type="button" className={styles.btnAgregarImg}
+                  onClick={() => inputFileRef.current?.click()}>
+                  <ImagePlus size={15} strokeWidth={2} />
+                  Agregar imágenes
+                </button>
+              )}
             </div>
 
             <input ref={inputFileRef} type="file"
@@ -337,6 +350,10 @@ export default function AdminProductoForm() {
               multiple className={styles.inputFileOculto}
               onChange={handleAgregarImagenes} />
 
+            {errores.imagenes && (
+              <p className={styles.error} style={{ marginTop: '0.25rem' }}>{errores.imagenes}</p>
+            )}
+            <p className={styles.campoHint}>Máximo {MAX_IMAGENES} imágenes por producto.</p>
             {imagenes.length > 0 ? (
               <div className={styles.imagenesGrid}>
                 {imagenes.map((img, idx) => (
@@ -353,18 +370,20 @@ export default function AdminProductoForm() {
                     </button>
                   </div>
                 ))}
-                <button type="button" className={styles.imagenAgregarCard}
-                  onClick={() => inputFileRef.current?.click()}>
-                  <ImagePlus size={22} strokeWidth={1.5} className={styles.imagenAgregarIcono} />
-                  <span className={styles.imagenAgregarTexto}>Agregar</span>
-                </button>
+                {imagenes.length < MAX_IMAGENES && (
+                  <button type="button" className={styles.imagenAgregarCard}
+                    onClick={() => inputFileRef.current?.click()}>
+                    <ImagePlus size={22} strokeWidth={1.5} className={styles.imagenAgregarIcono} />
+                    <span className={styles.imagenAgregarTexto}>Agregar</span>
+                  </button>
+                )}
               </div>
             ) : (
               <button type="button" className={styles.imagenesVacio}
                 onClick={() => inputFileRef.current?.click()}>
                 <ImagePlus size={30} strokeWidth={1.3} className={styles.imagenIcono} />
                 <span className={styles.imagenTexto}>Tocá para agregar imágenes</span>
-                <span className={styles.imagenSubtexto}>JPG, PNG, WebP — podés seleccionar varias a la vez</span>
+                <span className={styles.imagenSubtexto}>JPG, PNG, WebP - podés seleccionar varias a la vez</span>
               </button>
             )}
           </div>

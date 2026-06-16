@@ -1,6 +1,3 @@
-// src/pages/Admin/Categorias/AdminCategorias.jsx
-// Gestión de categorías — conectada a la API
-
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, X, Check, Tag } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout/AdminLayout'
@@ -49,10 +46,10 @@ export default function AdminCategorias() {
       setCargando(true)
       try {
         const res = await backendRESTAdapter.obtenerCategorias()
-        // La API devuelve { id, name } — cantidad la calculamos aparte si hace falta
+        // La API devuelve { id, name } - cantidad la calculamos aparte si hace falta
         setCategorias(res.data.map(c => ({ ...c, cantidad: c.cantidad ?? 0 })))
       } catch (err) {
-        console.error('Error cargando categorías:', err)
+        console.error('Error al cargar categorías:', err)
       } finally {
         setCargando(false)
       }
@@ -109,7 +106,6 @@ export default function AdminCategorias() {
       setToast(editandoId ? 'editado' : 'creado')
       setTimeout(() => setToast(''), 2500)
     } catch (err) {
-      console.error('Error guardando categoría:', err)
       setErrorNombre('Error al guardar. Intentá de nuevo.')
     } finally {
       setGuardando(false)
@@ -129,7 +125,6 @@ export default function AdminCategorias() {
       setToast('eliminado')
       setTimeout(() => setToast(''), 2500)
     } catch (err) {
-      console.error('Error eliminando categoría:', err)
       setToast('error')
       setTimeout(() => setToast(''), 2500)
     }
