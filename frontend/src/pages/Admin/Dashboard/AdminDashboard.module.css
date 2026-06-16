@@ -4,7 +4,7 @@
   gap: 1.5rem;
 }
 
-/* ── ENCABEZADO ── */
+/* == ENCABEZADO == */
 .header {
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@
   color: var(--color-text-muted);
 }
 
-/* ── CONTADORES CLICKEABLES ── */
+/* == CONTADORES CLICKEABLES == */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -104,7 +104,7 @@
   opacity: 1;
 }
 
-/* ── ACCESOS RÁPIDOS ── */
+/* == ACCESOS RÁPIDOS == */
 .seccionTitulo {
   font-size: 0.938rem;
   font-weight: 500;

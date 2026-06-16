@@ -1,6 +1,3 @@
-// src/pages/Admin/Dashboard/AdminDashboard.jsx
-// Panel principal del administrador — contadores con datos reales de la API
-
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Package, Tag, Info, Plus, TrendingUp, Star, Sparkles, ChevronRight } from 'lucide-react'
@@ -31,7 +28,6 @@ export default function AdminDashboard() {
           productosDestacados: productos.filter(p => p.is_featured).length,
         })
       } catch (err) {
-        console.error('Error cargando stats:', err)
         // En caso de error mostramos ceros
         setStats({
           totalProductos: 0, totalCategorias: 0,
@@ -44,9 +40,9 @@ export default function AdminDashboard() {
     cargarStats()
   }, [])
 
-  // Muestra "—" mientras carga, el número real después
+  // Muestra "-" mientras carga, el número real después
   function num(val) {
-    if (cargando) return '—'
+    if (cargando) return '-'
     return val
   }
 

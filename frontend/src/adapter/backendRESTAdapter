@@ -2,10 +2,10 @@ import api from '../services/api';
 
 const backendRESTAdapter = {
 
-  // ── Autenticación ─────────────────────────────────────────
+  // == Autenticación =========================================
   loginUsuario: (data) => api.post('/auth/login', data),
 
-  // ── Productos ─────────────────────────────────────────────
+  // == Productos =============================================
   obtenerProductos:      (params) => api.get('/products', { params }),
   obtenerProductoPorId:  (id)     => api.get(`/products/${id}`),
   crearProducto:  (data) => api.post('/products', data, {
@@ -16,14 +16,14 @@ const backendRESTAdapter = {
   }),
   eliminarProducto: (id) => api.delete(`/products/${id}`),
 
-  // ── Categorías ────────────────────────────────────────────
+  // == Categorías ============================================
   obtenerCategorias:     ()        => api.get('/categories'),
   obtenerCategoriaPorId: (id)      => api.get(`/categories/${id}`),
   crearCategoria:        (data)    => api.post('/categories', data),
   editarCategoria:       (id, data)=> api.put(`/categories/${id}`, data),
   eliminarCategoria:     (id)      => api.delete(`/categories/${id}`),
 
-  // ── Info del negocio ──────────────────────────────────────
+  // == Info del negocio ======================================
   // GET /api/business → devuelve la única fila de business_info
   obtenerBusiness: () => api.get('/business'),
 
@@ -33,7 +33,7 @@ const backendRESTAdapter = {
   //         instagram, facebook }
   editarBusiness: (id, data) => api.put(`/business/${id}`, data),
 
-  // ── Horario ───────────────────────────────────────────────
+  // == Horario ===============================================
   // GET /api/horario → array de 7 días ordenados
   obtenerHorario: () => api.get('/horario'),
 
@@ -41,7 +41,7 @@ const backendRESTAdapter = {
   // data: { horas: '8:00 a.m. – 6:00 p.m.', abierto: true }
   editarHorarioDia: (id, data) => api.put(`/horario/${id}`, data),
 
-  // ── Políticas ─────────────────────────────────────────────
+  // == Políticas =============================================
   // GET /api/politicas → array de políticas ordenadas
   obtenerPoliticas: () => api.get('/politicas'),
 
@@ -49,7 +49,7 @@ const backendRESTAdapter = {
   // data: { titulo: '...', contenido: '...' }
   editarPolitica: (id, data) => api.put(`/politicas/${id}`, data),
 
-  // ── Videos ────────────────────────────────────────────────
+  // == Videos ================================================
   // GET /api/videos → array de videos ordenados
   obtenerVideos: () => api.get('/videos'),
 

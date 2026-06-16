@@ -189,7 +189,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* === CARRUSEL PRODUCTOS — skeleton mientras carga === */}
+      {/* === CARRUSEL PRODUCTOS - skeleton mientras carga === */}
       <section className={styles.seccion}>
         <p className={styles.seccionTitulo}>Ofertas y destacados</p>
         {cargandoProd ? (

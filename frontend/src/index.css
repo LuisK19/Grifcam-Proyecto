@@ -24,16 +24,17 @@
   --color-border-strong:  var(--color-peach-glow);      /* bordes con más contraste        */
 
   /* Textos */
-  --color-text:           #2c1a0e;   /* texto principal — marrón muy oscuro                */
-  --color-text-muted:     #7a4f2e;   /* texto secundario — marrón medio                    */
+  --color-text:           #2c1a0e;   /* texto principal - marrón muy oscuro                */
+  --color-text-muted:     #7a4f2e;   /* texto secundario - marrón medio                    */
   --color-text-on-primary: #ffffff;  /* texto sobre fondo naranja (botones)                */
 
-  /* Naranjas oscuros — pasan contraste AA (4.5:1) sobre fondos claros */
+  /* Naranjas oscuros - pasan contraste AA (4.5:1) sobre fondos claros */
   --color-primary-dark:   #B85515;   /* naranja oscuro sobre blanco        */
   --color-primary-darker: #7A3310;   /* naranja muy oscuro sobre naranja claro */
   --color-price:          #C45E1A;   /* precio sobre fondo blanco          */
+  --color-price:          #C45E1A;   /* precio sobre fondo blanco          */
 
-  /* Avatares de categoría — texto oscuro sobre fondo pastel */
+  /* Avatares de categoría - texto oscuro sobre fondo pastel */
   --color-avatar-orange-bg:    #FEF0E6;
   --color-avatar-orange-text:  #7A3310;
   --color-avatar-blue-bg:      #E6F1FB;
@@ -69,12 +70,6 @@
   --shadow-sm:    0 1px 4px  rgba(44, 26, 14, 0.06);
   --shadow:       0 2px 12px rgba(44, 26, 14, 0.10);
   --shadow-lg:    0 6px 24px rgba(44, 26, 14, 0.14);
-  /* Naranja más oscuro y apagado para hero/navbar en modo oscuro */
-  --color-primary:        #C4671E;
-  --color-primary-hover:  #D4762A;
-  --color-primary-light:  #2E1C0A;
-  --color-primary-dark:   #E08030;
-  --color-price:          #E08030;
 }
 
 
@@ -82,40 +77,40 @@
    MODO OSCURO
    ============================================================ */
 [data-theme="dark"] {
-  /* Fondos — café oscuro profundo */
+  /* Fondos - café oscuro profundo */
   --color-bg:             #1C1008;
   --color-surface:        #2A1A0C;
   --color-surface-warm:   #321E0E;
 
-  /* Bordes — sutiles, no tan marcados */
+  /* Bordes - sutiles, no tan marcados */
   --color-border:         #3E2410;
   --color-border-strong:  #5C3618;
 
-  /* Textos — crema cálido legible */
+  /* Textos - crema cálido legible */
   --color-text:           #F0DEC8;
   --color-text-muted:     #9A7250;
   --color-text-on-primary: #ffffff;
 
-  /* Primario — naranja más apagado para no brillar tanto */
+  /* Primario - naranja más apagado para no brillar tanto */
   --color-primary:        #C86820;
   --color-primary-hover:  #D97528;
   --color-primary-light:  #2E1C0A;
   --color-primary-dark:   #E08030;
   --color-price:          #D97528;
 
-  /* Avatares — tonos oscuros pero legibles */
-  --color-avatar-orange-bg:    #2E1C0A;
-  --color-avatar-orange-text:  #E08030;
-  --color-avatar-blue-bg:      #0D1E33;
-  --color-avatar-blue-text:    #6BA3D6;
-  --color-avatar-green-bg:     #0A1F18;
-  --color-avatar-green-text:   #4CAF84;
-  --color-avatar-yellow-bg:    #1F1800;
-  --color-avatar-yellow-text:  #D4A017;
-  --color-avatar-purple-bg:    #150E2E;
-  --color-avatar-purple-text:  #9B8FE0;
-  --color-avatar-red-bg:       #1F0A08;
-  --color-avatar-red-text:     #E07060;
+  /* Avatares - tonos oscuros pero legibles */
+  --color-avatar-orange-bg:    #3D2510;
+  --color-avatar-orange-text:  #F4A050;
+  --color-avatar-blue-bg:      #0D2040;
+  --color-avatar-blue-text:    #7BB8F0;
+  --color-avatar-green-bg:     #0A2820;
+  --color-avatar-green-text:   #5DC898;
+  --color-avatar-yellow-bg:    #251A00;
+  --color-avatar-yellow-text:  #E8B830;
+  --color-avatar-purple-bg:    #1A1035;
+  --color-avatar-purple-text:  #AFA4F0;
+  --color-avatar-red-bg:       #280C0A;
+  --color-avatar-red-text:     #F08070;
 }
 
 /* ------------------------------------------------------------
@@ -157,4 +152,11 @@ a:hover {
 button {
   cursor: pointer;
   font-family: inherit;
+}
+/* === TOGGLE MODO OSCURO FLOTANTE === */
+@media (min-width: 64rem) {
+  .darkModeFloatingBtn {
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+  }
 }
