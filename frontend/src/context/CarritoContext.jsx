@@ -1,6 +1,3 @@
-// src/context/CarritoContext.jsx
-// Contexto global del carrito de compras
-
 import { createContext, useContext, useState } from 'react'
 
 const CarritoContext = createContext(null)
@@ -9,7 +6,7 @@ export function CarritoProvider({ children }) {
   const [items, setItems] = useState([])
   // Cada item: { id, name, price, previous_price, image_url, cantidad }
 
-  // Agregar producto — si ya existe, suma la cantidad
+  // Agregar producto - si ya existe, suma la cantidad
   function agregar(producto, cantidad = 1) {
     setItems(prev => {
       const existe = prev.find(i => i.id === producto.id)

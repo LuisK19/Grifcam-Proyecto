@@ -1,6 +1,3 @@
-// src/components/AdminLayout/AdminLayout.jsx
-// Layout del panel administrativo — sidebar desktop + bottom nav mobile
-
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {

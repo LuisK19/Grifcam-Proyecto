@@ -1,12 +1,10 @@
-/* LAYOUT BASE */
-
 .layout {
   display: flex;
   min-height: 100vh;
   background: var(--color-bg);
 }
 
-/* SIDEBAR — desktop */
+/* SIDEBAR - desktop */
 
 .sidebar {
   display: none;
