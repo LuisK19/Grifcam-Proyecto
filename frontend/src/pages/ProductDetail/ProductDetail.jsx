@@ -1,8 +1,3 @@
-// src/pages/ProductDetail/ProductDetail.jsx
-// Vista de detalle de producto — conectado a la API REST
-// TODO: actualizar WHATSAPP_NUMBER cuando esté disponible
-// TODO: conectar agregarAlCarrito() con useCarrito() cuando se integre el contexto
-
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, ChevronLeft, ChevronRight, X, ShoppingCart, MessageCircle } from 'lucide-react'
@@ -10,8 +5,7 @@ import styles from './ProductDetail.module.css'
 import backendRESTAdapter from '../../adapter/backendRESTAdapter'
 import { useCarrito } from '../../context/CarritoContext'
 
-// TODO: mover a variable de entorno cuando esté definido el número real
-const WHATSAPP_NUMBER = '50600000000'
+const WHATSAPP_FALLBACK = '50660759718'
 
 // Devuelve array de URLs ordenadas por image_order
 // Supabase Storage ya devuelve URLs completas
@@ -36,6 +30,7 @@ export default function ProductDetail() {
   const [lightbox, setLightbox]   = useState(false)
   const [cantidad, setCantidad]   = useState(1)
   const [toast, setToast]         = useState(false)
+  const [whatsapp, setWhatsapp]     = useState(WHATSAPP_FALLBACK)
 
   // Cargar producto y relacionados desde la API
   useEffect(() => {
@@ -44,9 +39,13 @@ export default function ProductDetail() {
       setError('')
       setImgActiva(0)
       try {
-        const res      = await backendRESTAdapter.obtenerProductoPorId(id)
+        const [res, resBiz] = await Promise.all([
+          backendRESTAdapter.obtenerProductoPorId(id),
+          backendRESTAdapter.obtenerBusiness(),
+        ])
         const producto = res.data
         setProduct(producto)
+        if (resBiz?.data?.whatsapp) setWhatsapp(resBiz.data.whatsapp)
 
         // Relacionados: misma categoría, excluye el producto actual
         const resRel = await backendRESTAdapter.obtenerProductos({
@@ -54,7 +53,6 @@ export default function ProductDetail() {
         })
         setRelacionados(resRel.data.filter(p => p.id !== producto.id).slice(0, 4))
       } catch (err) {
-        console.error('Error cargando producto:', err)
         setError('No se pudo cargar el producto.')
       } finally {
         setCargando(false)
@@ -88,10 +86,17 @@ export default function ProductDetail() {
 
   function consultarWhatsApp() {
     if (!product) return
+    const precioTexto = product.previous_price
+      ? `₡ ${Number(product.price).toLocaleString('es-CR')} _(antes ₡ ${Number(product.previous_price).toLocaleString('es-CR')})_`
+      : `₡ ${Number(product.price).toLocaleString('es-CR')}`
     const msg = encodeURIComponent(
-      `Hola, me interesa el producto:\n*${product.name}*\nPrecio: ₡ ${Number(product.price).toLocaleString('es-CR')}\n\n¿Está disponible?`
+      `¡Hola! Me gustaría consultar sobre el siguiente producto:\n\n` +
+      `*${product.name}*\n` +
+      `Precio: ${precioTexto}\n` +
+      (product.categories?.name ? `Categoría: ${product.categories.name}\n` : '') +
+      `\n¿Está disponible para compra?`
     )
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank')
+    window.open(`https://wa.me/${whatsapp}?text=${msg}`, '_blank')
   }
 
   function agregarAlCarrito() {

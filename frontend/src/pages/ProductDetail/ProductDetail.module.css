@@ -1,9 +1,3 @@
-/* src/pages/ProductDetail/ProductDetail.module.css */
-
-/* ============================================================
-   PÁGINA
-   ============================================================ */
-
 .page {
   background-color: var(--color-bg);
   padding-top: 3rem;       /* topbar mobile */
